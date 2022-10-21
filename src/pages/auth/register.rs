@@ -3,9 +3,9 @@ use yew_router::components::Link;
 
 use crate::router::route::Route;
 
-pub struct Home;
+pub struct Register;
 
-impl Component for Home {
+impl Component for Register {
     type Message = ();
     type Properties = ();
 
@@ -15,10 +15,7 @@ impl Component for Home {
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
-            <>
-                <div><Link<Route> to={Route::Login}>{ "click here to go Login" }</Link<Route>></div>
-                <div><Link<Route> to={Route::Register}>{ "click here to go Register" }</Link<Route>></div>
-            </>
+            <Link<Route> to={Route::Home}>{ "click here to go Home" }</Link<Route>>
         }
     }
 }

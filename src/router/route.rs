@@ -1,47 +1,69 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::pages::dream::Dream;
-use crate::pages::home::Home;
-use crate::pages::login::Login;
-use crate::pages::user::User;
+use crate::pages::auth::*;
+use crate::pages::dream::*;
+use crate::pages::*;
 
+// Setting RouteURL
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
     #[at("/")]
     Home,
     #[at("/login")]
     Login,
-    #[at("/user")]
-    User,
-    #[at("dream")]
-    Dream,
+    #[at("/register")]
+    Register,
+    #[at("/dream_add")]
+    DreamAdd,
+    #[at("/dream_edit")]
+    DreamEdit,
+    #[at("/dream_show")]
+    DreamShow,
     #[at("/404")]
     NotFound,
 }
 
+// Switch Routing
 pub fn switch(routes: &Route) -> Html {
     match routes {
+        // MainHomePage Routing
         Route::Home => {
             html! {
-                <Home />
+                <home::Home />
             }
         }
+
+        // Auth Routing
         Route::Login => {
             html! {
-                <Login />
+                <login::Login />
             }
         }
-        Route::User => {
+        Route::Register => {
             html! {
-                <User />
+                <register::Register />
             }
         }
-        Route::Dream => {
+
+        // Dream Routing
+        Route::DreamAdd => {
             html! {
-                <Dream />
+                <dream_add::DreamAdd />
             }
         }
+        Route::DreamEdit => {
+            html! {
+                <dream_edit::DreamEdit />
+            }
+        }
+        Route::DreamShow => {
+            html! {
+                <dream_show::DreamShow />
+            }
+        }
+
+        // Error Routing
         Route::NotFound => {
             html! {
                 <div class="container">
