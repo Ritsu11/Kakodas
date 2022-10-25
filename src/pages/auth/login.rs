@@ -1,52 +1,117 @@
-use yew::prelude::*;
-use yew_router::components::Link;
-
 use crate::router::route::Route;
+use gloo::storage::LocalStorage;
+use gloo_storage::Storage;
+use yew::prelude::*;
+use yew_router::prelude::*;
+// use js_sys::JsString;
+// use reqwasm::http::Request;
+// use serde::{Deserialize, Serialize};
+// use web_sys::console;
 
-pub struct Login;
+pub struct Login {
+    pub email: String,
+    pub password: String,
+}
+
+pub enum Msg {
+    SubmitLogin,
+}
 
 impl Component for Login {
-    type Message = ();
+    type Message = Msg;
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self
+        Self {
+            email: "".to_string(),
+            password: "".to_string(),
+        }
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
-        html! {
-            <>
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::SubmitLogin => {
+                wasm_bindgen_futures::spawn_local(async move {
+                    let _login_url =
+                        String::from("https://api.weather.gov/gridpoints/DTX/65,33/forecast");
 
-            <h2>{"Login Form"}</h2>
+                    // let fetch_response = Request::post(&login_url)
+                    //     .header(ContentType::json())
+                    //     .body(json_request)
+                    //     .send()
+                    //     .await
+                    //     .unwrap()
+                    //     .text()
+                    //     .await
+                    //     .unwrap();
+                });
 
-            <form action="/" method="post">
+                // Set login to LocalStorage
+                LocalStorage::set("login", true).ok();
+                LocalStorage::set("id", 10).ok();
+                true
+            }
+        }
+    }
 
-                <div class="container">
-                    <label for="uname"><b>{"Username"}</b></label>
-                    <input type="text" placeholder="Enter Username" name="uname" />
+    fn changed(&mut self, _ctx: &Context<Self>) -> bool {
+        false
+    }
 
-                    <label for="psw"><b>{"Password"}</b></label>
-                    <input
-                    type="password"
-                    placeholder="Enter Password"
-                    name="psw"
-                    />
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let link = ctx.link();
+        let login_status: Option<bool> = LocalStorage::get("login").unwrap_or_default();
+        let id_status: Option<i32> = LocalStorage::get("id").unwrap_or_default();
 
-                    <button type="submit">{"Login"}</button>
-                    <label>
-                    <input type="checkbox" name="remember" />
-                    </label>
-                </div>
+        match login_status {
+            Some(_a) => match id_status {
+                Some(_i) => html! {
+                    <Redirect<Route> to={Route::Home}/>
+                },
+                None => {
+                    LocalStorage::delete("login");
 
-                <div class="container" style="background-color: #f1f1f1">
-                    <button type="button" class="cancelbtn">{"Cancel"}</button>
-                    <span class="psw">{"Forgot"} <a href="#">{"password?"}</a></span>
-                </div>
-            </form>
+                    html! {
+                        <Redirect<Route> to={Route::Home}/>
+                    }
+                }
+            },
+            None => {
+                LocalStorage::delete("id");
 
-             <Link<Route> to={Route::Home}>{ "click here to go Home" }</Link<Route>>
+                html! {
+                    <>
 
-            </>
+                    <h2>{"Login Form"}</h2>
+
+                    <form>
+
+                        <div class="container">
+                            <label for="uname"><b>{"e-mail"}</b></label>
+                            <input type="text" name="email"  />
+
+                            <label for="psw"><b>{"Password"}</b></label>
+                            <input type="password" placeholder="Enter Password" name="psw" />
+
+                            <button type="submit">{"Login"}</button>
+                            <label>
+                            <input type="checkbox" name="remember" />
+                            </label>
+                        </div>
+
+                        <div class="container" style="background-color: #f1f1f1">
+                            <button type="button" class="cancelbtn" >{"Cancel"}</button>
+                            <span class="psw">{"Forgot"} <a href="/">{"password?"}</a></span>
+                        </div>
+                    </form>
+
+                    <div>
+                        <button onclick={link.callback(|_| Msg::SubmitLogin)}>{"+1"}</button>
+                    </div>
+
+                    </>
+                }
+            }
         }
     }
 }

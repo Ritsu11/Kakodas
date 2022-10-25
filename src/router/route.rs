@@ -49,17 +49,17 @@ pub fn switch(routes: &Route) -> Html {
         // Dream Routing
         Route::DreamAdd => {
             html! {
-                <dream_add::DreamAdd />
+                <add::Add />
             }
         }
         Route::DreamEdit => {
             html! {
-                <dream_edit::DreamEdit />
+                <edit::Edit />
             }
         }
         Route::DreamShow => {
             html! {
-                <dream_show::DreamShow />
+                <show::Show />
             }
         }
 

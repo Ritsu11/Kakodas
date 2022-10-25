@@ -3,9 +3,9 @@ use yew_router::components::Link;
 
 use crate::router::route::Route;
 
-pub struct DreamEdit;
+pub struct Add;
 
-impl Component for DreamEdit {
+impl Component for Add {
     type Message = ();
     type Properties = ();
 

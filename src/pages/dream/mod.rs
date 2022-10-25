@@ -1,3 +1,3 @@
-pub mod dream_add;
-pub mod dream_edit;
-pub mod dream_show;
+pub mod add;
+pub mod edit;
+pub mod show;
