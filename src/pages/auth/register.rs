@@ -3,6 +3,10 @@ use yew_router::components::Link;
 
 use crate::router::route::Route;
 
+// use yew::prelude::*;
+// use reqwasm::http::Request;
+// use serde::{Deserialize, Serialize};
+
 pub struct Register;
 
 impl Component for Register {

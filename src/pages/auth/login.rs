@@ -1,15 +1,13 @@
 use crate::router::route::Route;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
+use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
-use yew::prelude::*;
 use yew::{events::Event, html, Component, Context, Html};
 use yew_router::prelude::*;
 
-// use js_sys::JsString;
-// use reqwasm::http::Request;
-// use serde::{Deserialize, Serialize};
-// use web_sys::console;
+use js_sys::JsString;
+use web_sys::console;
 
 pub struct Login {
     pub email: String,
@@ -35,6 +33,16 @@ impl Component for Login {
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
+            Msg::InputEmail(str) => {
+                self.email = str.to_string();
+                console::log_1(&JsString::from(self.email.to_string()));
+                true
+            }
+            Msg::InputPassword(str) => {
+                self.password = str.to_string();
+                console::log_1(&JsString::from(self.password.to_string()));
+                true
+            }
             Msg::SubmitLogin => {
                 wasm_bindgen_futures::spawn_local(async move {
                     let _login_url =
@@ -84,13 +92,18 @@ impl Component for Login {
             None => {
                 LocalStorage::delete("id");
 
-                let input_email = link.callback(|e: Event| {
-                    let target: EventTarget = e
-                        .target()
-                        .expect("Event should have a target when dispatched");
-                    // You must KNOW target is a HtmlInputElement, otherwise
-                    // the call to value would be Undefined Behaviour (UB).
-                    Msg::InputEmail(target.unchecked_into::<HtmlInputElement>().value())
+                let input_email = link.batch_callback(|e: Event| {
+                    let target: Option<EventTarget> = e.target();
+                    let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                    input.map(|input| Msg::InputEmail(input.value()))
+                });
+
+                let input_password = link.batch_callback(|e: Event| {
+                    let target: Option<EventTarget> = e.target();
+                    let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                    input.map(|input| Msg::InputPassword(input.value()))
                 });
 
                 html! {
@@ -102,12 +115,13 @@ impl Component for Login {
 
                         <div class="container">
                             <label for="uname"><b>{"e-mail"}</b></label>
-                            <input type="text" name="email"  value={self.email.clone()} oninput={link.callback(|e:InputData| Msg::SetTitle(e.value))}/>
+                            <input type="text" placeholder="Enter Email" name="email" onchange={input_email} />
 
                             <label for="psw"><b>{"Password"}</b></label>
-                            <input type="password" placeholder="Enter Password" name="psw" />
+                            <input type="password" placeholder="Enter Password" name="psw" onchange={input_password}/>
 
-                            <button type="submit">{"Login"}</button>
+                            // <button type="submit">{"Login"}</button>
+                            <button onclick={link.callback(|_| Msg::SubmitLogin)}>{"ログイン"}</button>
                             <label>
                             <input type="checkbox" name="remember" />
                             </label>
@@ -120,7 +134,6 @@ impl Component for Login {
                     </form>
 
                     <div>
-                        <button onclick={link.callback(|_| Msg::SubmitLogin)}>{"+1"}</button>
                     </div>
 
                     </>
