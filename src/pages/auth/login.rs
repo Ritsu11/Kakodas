@@ -1,8 +1,11 @@
 use crate::router::route::Route;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
+use web_sys::{EventTarget, HtmlInputElement};
 use yew::prelude::*;
+use yew::{events::Event, html, Component, Context, Html};
 use yew_router::prelude::*;
+
 // use js_sys::JsString;
 // use reqwasm::http::Request;
 // use serde::{Deserialize, Serialize};
@@ -14,6 +17,8 @@ pub struct Login {
 }
 
 pub enum Msg {
+    InputEmail(String),
+    InputPassword(String),
     SubmitLogin,
 }
 
@@ -79,6 +84,15 @@ impl Component for Login {
             None => {
                 LocalStorage::delete("id");
 
+                let input_email = link.callback(|e: Event| {
+                    let target: EventTarget = e
+                        .target()
+                        .expect("Event should have a target when dispatched");
+                    // You must KNOW target is a HtmlInputElement, otherwise
+                    // the call to value would be Undefined Behaviour (UB).
+                    Msg::InputEmail(target.unchecked_into::<HtmlInputElement>().value())
+                });
+
                 html! {
                     <>
 
@@ -88,7 +102,7 @@ impl Component for Login {
 
                         <div class="container">
                             <label for="uname"><b>{"e-mail"}</b></label>
-                            <input type="text" name="email"  />
+                            <input type="text" name="email"  value={self.email.clone()} oninput={link.callback(|e:InputData| Msg::SetTitle(e.value))}/>
 
                             <label for="psw"><b>{"Password"}</b></label>
                             <input type="password" placeholder="Enter Password" name="psw" />
