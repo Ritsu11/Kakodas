@@ -6,8 +6,8 @@ use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Component, Context, Html};
 use yew_router::prelude::*;
 
-use js_sys::JsString;
-use web_sys::console;
+// use js_sys::JsString;
+// use web_sys::console;
 
 pub struct Login {
     pub email: String,
@@ -35,18 +35,17 @@ impl Component for Login {
         match msg {
             Msg::InputEmail(str) => {
                 self.email = str.to_string();
-                console::log_1(&JsString::from(self.email.to_string()));
+                // console::log_1(&JsString::from(self.email.to_string()));
                 true
             }
             Msg::InputPassword(str) => {
                 self.password = str.to_string();
-                console::log_1(&JsString::from(self.password.to_string()));
+                // console::log_1(&JsString::from(self.password.to_string()));
                 true
             }
             Msg::SubmitLogin => {
                 wasm_bindgen_futures::spawn_local(async move {
-                    let _login_url =
-                        String::from("https://api.weather.gov/gridpoints/DTX/65,33/forecast");
+                    // let _login_url = String::from("https:localhost:8080/api/chapter/get_all");
 
                     // let fetch_response = Request::post(&login_url)
                     //     .header(ContentType::json())
@@ -67,18 +66,16 @@ impl Component for Login {
         }
     }
 
-    fn changed(&mut self, _ctx: &Context<Self>) -> bool {
-        false
-    }
-
     fn view(&self, ctx: &Context<Self>) -> Html {
         let link = ctx.link();
+        // Fetch LocalStorage Data
         let login_status: Option<bool> = LocalStorage::get("login").unwrap_or_default();
         let id_status: Option<i32> = LocalStorage::get("id").unwrap_or_default();
 
+        // Check LocalStorage LoginData
         match login_status {
-            Some(_a) => match id_status {
-                Some(_i) => html! {
+            Some(_login) => match id_status {
+                Some(_id) => html! {
                     <Redirect<Route> to={Route::Home}/>
                 },
                 None => {
@@ -92,13 +89,13 @@ impl Component for Login {
             None => {
                 LocalStorage::delete("id");
 
+                // Callback detect input form
                 let input_email = link.batch_callback(|e: Event| {
                     let target: Option<EventTarget> = e.target();
                     let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
                     input.map(|input| Msg::InputEmail(input.value()))
                 });
-
                 let input_password = link.batch_callback(|e: Event| {
                     let target: Option<EventTarget> = e.target();
                     let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
@@ -112,7 +109,6 @@ impl Component for Login {
                     <h2>{"Login Form"}</h2>
 
                     <form>
-
                         <div class="container">
                             <label for="uname"><b>{"e-mail"}</b></label>
                             <input type="text" placeholder="Enter Email" name="email" onchange={input_email} />
@@ -120,20 +116,17 @@ impl Component for Login {
                             <label for="psw"><b>{"Password"}</b></label>
                             <input type="password" placeholder="Enter Password" name="psw" onchange={input_password}/>
 
-                            // <button type="submit">{"Login"}</button>
                             <button onclick={link.callback(|_| Msg::SubmitLogin)}>{"ログイン"}</button>
                             <label>
-                            <input type="checkbox" name="remember" />
                             </label>
-                        </div>
-
-                        <div class="container" style="background-color: #f1f1f1">
-                            <button type="button" class="cancelbtn" >{"Cancel"}</button>
-                            <span class="psw">{"Forgot"} <a href="/">{"password?"}</a></span>
                         </div>
                     </form>
 
                     <div>
+                        { self.email.to_string() }
+                    </div>
+                    <div>
+                        { self.password.to_string() }
                     </div>
 
                     </>
