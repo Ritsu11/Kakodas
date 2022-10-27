@@ -2,6 +2,7 @@ use crate::router::route::Route;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
 use reqwasm::http::Request;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
 use yew::prelude::*;
@@ -12,7 +13,12 @@ use yew_router::prelude::*;
 use js_sys::JsString;
 use web_sys::console;
 
-pub struct Home;
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Home {
+    number: String,
+    name: String,
+}
 
 pub enum Msg {
     Click,
@@ -31,17 +37,29 @@ impl Component for Home {
                 y = 33
             );
 
-            let fetch_response = Request::get(&get_dream)
-                .send()
-                .await
-                .unwrap()
-                .text()
-                .await
-                .unwrap();
+            let response = Request::get(&get_dream).send().await;
 
-            console::log_1(&JsString::from(fetch_response));
+            match response {
+                Ok(response) => {
+                    let json: Result<Home, _> = response.json().await;
+                    match json {
+                        Ok(f) => {
+                            let number = f.number.to_string();
+                            let name = f.name;
+                            console::log_1(&JsString::from(number.to_string()));
+                        }
+                        Err(e) => console::log_1(&JsString::from(e.to_string())),
+                    }
+                }
+                Err(e) => console::log_1(&JsString::from(e.to_string())),
+            }
+
+            // console::log_1(&JsString::from(response));
         });
-        Self
+        Self {
+            number: "".to_string(),
+            name: "".to_string(),
+        }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
