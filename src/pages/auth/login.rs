@@ -44,20 +44,6 @@ impl Component for Login {
                 true
             }
             Msg::SubmitLogin => {
-                wasm_bindgen_futures::spawn_local(async move {
-                    // let _login_url = String::from("https:localhost:8080/api/chapter/get_all");
-
-                    // let fetch_response = Request::post(&login_url)
-                    //     .header(ContentType::json())
-                    //     .body(json_request)
-                    //     .send()
-                    //     .await
-                    //     .unwrap()
-                    //     .text()
-                    //     .await
-                    //     .unwrap();
-                });
-
                 // Set login to LocalStorage
                 LocalStorage::set("login", true).ok();
                 LocalStorage::set("id", 10).ok();

@@ -24,3 +24,4 @@ once_cell = "1"
 gloo = "0.8"
 gloo-storage = "0.2.2"
 getrandom = { version = "0.2", features = ["js"] }
+reqwest = "0.11.12"
