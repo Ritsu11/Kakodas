@@ -6,9 +6,6 @@ use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Component, Context, Html};
 use yew_router::prelude::*;
 
-// use js_sys::JsString;
-// use web_sys::console;
-
 pub struct Login {
     pub email: String,
     pub password: String,
@@ -18,6 +15,7 @@ pub enum Msg {
     InputEmail(String),
     InputPassword(String),
     SubmitLogin,
+    Call,
 }
 
 impl Component for Login {
@@ -25,6 +23,8 @@ impl Component for Login {
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
+        _ctx.link().send_message(Msg::Call);
+
         Self {
             email: "".to_string(),
             password: "".to_string(),
@@ -35,18 +35,20 @@ impl Component for Login {
         match msg {
             Msg::InputEmail(str) => {
                 self.email = str.to_string();
-                // console::log_1(&JsString::from(self.email.to_string()));
                 true
             }
             Msg::InputPassword(str) => {
                 self.password = str.to_string();
-                // console::log_1(&JsString::from(self.password.to_string()));
                 true
             }
             Msg::SubmitLogin => {
                 // Set login to LocalStorage
                 LocalStorage::set("login", true).ok();
                 LocalStorage::set("id", 10).ok();
+                true
+            }
+            Msg::Call => {
+                self.email = "check ctx load".to_string();
                 true
             }
         }
