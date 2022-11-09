@@ -1,21 +1,23 @@
 use crate::router::route::Route;
 
-use reqwasm::http::Request;
-use yew::{events::Event, html, use_state, Component, Context, Html};
+use gloo_net::http::Request;
+use serde::Deserialize;
+use yew::{html, Component, Context, Html};
 use yew_router::components::Link;
 
-// use gloo::storage::LocalStorage;
-// use gloo_storage::Storage;
+use crate::components::home;
 
-use serde::{Deserialize, Serialize};
-// use wasm_bindgen::JsCast;
-// use web_sys::{EventTarget, HtmlInputElement};
-use yew::prelude::*;
-// use yew_router::prelude::*;
-use js_sys::JsString;
-// use web_sys::{console, Request, RequestInit, RequestMode, Response};
+pub struct Home {
+    json: Vec<Video>,
+}
 
-pub struct Home;
+#[derive(Clone, PartialEq, Deserialize)]
+struct Video {
+    id: usize,
+    title: String,
+    speaker: String,
+    url: String,
+}
 
 pub enum Msg {
     Click,
@@ -26,7 +28,18 @@ impl Component for Home {
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self
+        let mut jsons = Self { json: Vec::new() };
+        wasm_bindgen_futures::spawn_local(async move {
+            let fetched_videos: Vec<Video> = Request::get("/tutorial/data.json")
+                .send()
+                .await
+                .unwrap()
+                .json()
+                .await
+                .unwrap();
+        });
+
+        jsons
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -40,7 +53,7 @@ impl Component for Home {
 
         html! {
             <>
-            <App />
+                <home::Home />
                 <button onclick={link.callback(|_| Msg::Click)}>{"show"}</button>
                 <div><Link<Route> to={Route::Login}>{ "click here to go Login" }</Link<Route>></div>
                 <div><Link<Route> to={Route::Register}>{ "click here to go Register" }</Link<Route>></div>
