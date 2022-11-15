@@ -26,21 +26,18 @@ impl Component for Home {
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            FetchMessage::SetFetchState(fetch_state) => {
-                self.response = fetch_state;
-                true
-            }
+            FetchMessage::SetFetchState(fetch_state) => true,
             FetchMessage::FetchStart => {
-                _ctx.link().send_future(async {
-                    match request_dream("/tutorial/data.json").await {
-                        Ok(json) => {
-                            self.json = json;
-                        }
-                        Err(err) => {
-                            log::error!("{}", err);
-                        }
-                    }
-                });
+                // _ctx.link().send_future(async {
+                //     match request_dream("/tutorial/data.json").await {
+                //         Ok(json) => {
+                //             self.json = json;
+                //         }
+                //         Err(err) => {
+                //             log::error!("{}", err);
+                //         }
+                //     }
+                // });
 
                 _ctx.link()
                     .send_message(FetchMessage::SetFetchState(FetchState::Fetching));
