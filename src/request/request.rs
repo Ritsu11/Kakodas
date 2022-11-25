@@ -1,14 +1,19 @@
-use crate::models::video::Video;
-use gloo_net::{http::Request, Error};
+use crate::request::state::FetchError;
+use wasm_bindgen::JsCast;
+use wasm_bindgen_futures::JsFuture;
+use web_sys::{Request, RequestInit, RequestMode, Response};
 
-pub async fn request_dream(url: &str) -> Result<Vec<Video>, Error> {
-    let fetched_videos: Vec<Video> = Request::get(url)
-        .send()
-        .await
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
+pub async fn fetch_dream(url: &str) -> Result<String, FetchError> {
+    let mut opts = RequestInit::new();
+    opts.method("GET");
+    opts.mode(RequestMode::Cors);
 
-    Ok(fetched_videos)
+    let request = Request::new_with_str_and_init(url, &opts)?;
+
+    let window = gloo::utils::window();
+    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+    let resp: Response = resp_value.dyn_into().unwrap();
+
+    let text = JsFuture::from(resp.text()?).await?;
+    Ok(text.as_string().unwrap())
 }

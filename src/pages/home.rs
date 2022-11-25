@@ -1,9 +1,7 @@
-use crate::models::video::Video;
-use crate::request::{request::request_dream, state::*};
-use crate::router::route::Route;
+use crate::models::user::UserDataList;
+use crate::request::{request::fetch_dream, state::*};
 
 use yew::{html, Component, Context, Html, Properties};
-use yew_router::components::Link;
 
 pub struct Home {
     response: FetchState<String>,
@@ -14,9 +12,12 @@ pub enum Msg {
     FetchStart,
 }
 
+#[derive(PartialEq, Properties)]
+pub struct Props;
+
 impl Component for Home {
     type Message = Msg;
-    type Properties = ();
+    type Properties = Props;
 
     fn create(ctx: &Context<Self>) -> Self {
         ctx.link().send_message(Msg::FetchStart);
@@ -33,6 +34,12 @@ impl Component for Home {
                 true
             }
             Msg::FetchStart => {
+                ctx.link().send_future(async {
+                    match fetch_dream("https://jsonplaceholder.typicode.com/posts").await {
+                        Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
+                        Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
+                    }
+                });
                 ctx.link()
                     .send_message(Msg::SetFetchState(FetchState::Fetching));
                 false
@@ -40,17 +47,28 @@ impl Component for Home {
         }
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let link = ctx.link();
-
-        html! {
-            <>
-                // <home::Home />
-
-                // <button onclick={link.callback(|_| Msg::Click)}>{"show"}</button>
-                <div><Link<Route> to={Route::Login}>{ "click here to go Login" }</Link<Route>></div>
-                <div><Link<Route> to={Route::Register}>{ "click here to go Register" }</Link<Route>></div>
-            </>
+    fn view(&self, _ctx: &Context<Self>) -> Html {
+        match &self.response {
+            FetchState::NotFetching => html! {<></>},
+            FetchState::Fetching => html! {<></>},
+            FetchState::Success(response) => {
+                let json: UserDataList = serde_json::from_str(&response).unwrap();
+                html! {
+                    {
+                        json.map(|data| {
+                            html! {
+                                <>
+                                    <div>{data.userId}</div>
+                                    <div>{data.id}</div>
+                                    <div>{data.title}</div>
+                                    <div>{data.body}</div>
+                                </>
+                            }
+                        }).collect::<Html>()
+                    }
+                }
+            }
+            FetchState::Failed(err) => html! { err },
         }
     }
 }
