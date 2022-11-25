@@ -6,13 +6,13 @@ use wasm_bindgen::prelude::*;
 
 // データ取得のstate
 pub enum FetchState<T> {
-    NotFetching,
     Fetching,
+    NotFetching,
     Success(T),
     Failed(FetchError),
 }
 
-/// Something wrong has occurred while fetching an external resource.
+// フェッチエラーの表示
 #[derive(Debug, Clone, PartialEq)]
 pub struct FetchError {
     err: JsValue,
@@ -28,9 +28,4 @@ impl From<JsValue> for FetchError {
     fn from(value: JsValue) -> Self {
         Self { err: value }
     }
-}
-
-pub enum FetchMessage {
-    SetFetchState(FetchState<String>),
-    FetchStart,
 }

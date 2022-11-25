@@ -1,46 +1,40 @@
+use crate::models::video::Video;
 use crate::request::{request::request_dream, state::*};
 use crate::router::route::Route;
 
 use yew::{html, Component, Context, Html, Properties};
 use yew_router::components::Link;
 
-use crate::components::home;
-use crate::models::video::Video;
-
 pub struct Home {
-    json: Vec<Video>,
+    response: FetchState<String>,
 }
 
-#[derive(PartialEq, Properties)]
-pub struct Props;
+pub enum Msg {
+    SetFetchState(FetchState<String>),
+    FetchStart,
+}
 
 impl Component for Home {
-    type Message = FetchMessage;
-    type Properties = Props;
+    type Message = Msg;
+    type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(FetchMessage::FetchStart);
+        ctx.link().send_message(Msg::FetchStart);
 
-        Self { json: vec![] }
+        Self {
+            response: FetchState::NotFetching,
+        }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            FetchMessage::SetFetchState(fetch_state) => true,
-            FetchMessage::FetchStart => {
-                // _ctx.link().send_future(async {
-                //     match request_dream("/tutorial/data.json").await {
-                //         Ok(json) => {
-                //             self.json = json;
-                //         }
-                //         Err(err) => {
-                //             log::error!("{}", err);
-                //         }
-                //     }
-                // });
-
-                _ctx.link()
-                    .send_message(FetchMessage::SetFetchState(FetchState::Fetching));
+            Msg::SetFetchState(fetch_state) => {
+                self.response = fetch_state;
+                true
+            }
+            Msg::FetchStart => {
+                ctx.link()
+                    .send_message(Msg::SetFetchState(FetchState::Fetching));
                 false
             }
         }
@@ -58,12 +52,5 @@ impl Component for Home {
                 <div><Link<Route> to={Route::Register}>{ "click here to go Register" }</Link<Route>></div>
             </>
         }
-        // self.iter()
-        //     .map(|video| {
-        //         html! {
-        //             <p>{format!("{}: {}", video.speaker, video.title)}</p>
-        //         }
-        //     })
-        //     .collect()
     }
 }
