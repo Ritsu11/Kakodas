@@ -93,29 +93,36 @@ impl Component for Login {
 
                 html! {
                     <>
-
-                    <h2>{"Login Form"}</h2>
-
-                    <form>
-                        <div class="container">
-                            <label for="uname"><b>{"e-mail"}</b></label>
-                            <input type="text" placeholder="Enter Email" name="email" onchange={input_email} />
-
-                            <label for="psw"><b>{"Password"}</b></label>
-                            <input type="password" placeholder="Enter Password" name="psw" onchange={input_password}/>
-
-                            <button onclick={link.callback(|_| Msg::SubmitLogin)}>{"ログイン"}</button>
-                            <label>
-                            </label>
+                        <div class="wrap">
+                            <div class="frame">
+                                <div class="frame_contents">
+                                    <div class="logo"><img src="aaa.png" alt="logo"/></div>
+                                    <div class="head">{"ログイン"}</div>
+                                    <div class="frame_form">
+                                        <form action="POST">
+                                            <div class="login_mail">
+                                                <p>{"メールアドレス"}</p>
+                                                <input type="text" placeholder="Yutaka.FujiFuji@test.com" name="email" onchange={input_email} />
+                                            </div>
+                                            <div class="login_pass">
+                                                <p>{"パスワード"}</p>
+                                                <input type="password" placeholder="Password123@" name="psw" onchange={input_password}/>
+                                            </div>
+                                                <button id="login" onclick={link.callback(|_| Msg::SubmitLogin)}>{"ログイン"}</button>
+                                        </form>
+                                        <div>
+                                            <button>{"新規会員登録"}</button>
+                                        </div>
+                                            <a href="">
+                                            <p>{"サンプルを見る"}</p>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </form>
 
-                    <div>
-                        { self.email.to_string() }
-                    </div>
-                    <div>
-                        { self.password.to_string() }
-                    </div>
+                        <div>{ self.email.to_string() }</div>
+                        <div>{ self.password.to_string() }</div>
 
                     </>
                 }

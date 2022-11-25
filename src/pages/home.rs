@@ -1,7 +1,8 @@
 use crate::models::user::UserDataList;
 use crate::request::{request::fetch_dream, state::*};
-
+use crate::router::route::Route;
 use yew::{html, Component, Context, Html, Properties};
+use yew_router::components::Link;
 
 pub struct Home {
     response: FetchState<String>,
@@ -54,18 +55,21 @@ impl Component for Home {
             FetchState::Success(response) => {
                 let json: UserDataList = serde_json::from_str(&response).unwrap();
                 html! {
-                    {
-                        json.map(|data| {
-                            html! {
-                                <>
-                                    <div>{data.userId}</div>
-                                    <div>{data.id}</div>
-                                    <div>{data.title}</div>
-                                    <div>{data.body}</div>
-                                </>
-                            }
-                        }).collect::<Html>()
-                    }
+                    <>
+                        <Link<Route> to={Route::DreamShow}>{ "click here to go Dream" }</Link<Route>>
+                        {
+                            json.map(|data| {
+                                html! {
+                                    <>
+                                        <div>{data.userId}</div>
+                                        <div>{data.id}</div>
+                                        <div>{data.title}</div>
+                                        <div>{data.body}</div>
+                                    </>
+                                }
+                            }).collect::<Html>()
+                        }
+                    </>
                 }
             }
             FetchState::Failed(err) => html! { err },
