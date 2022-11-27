@@ -149,24 +149,24 @@ impl Component for Login {
                                     <div class="frame_contents">
                                         <div class="logo"><img src="aaa.png" alt="logo"/></div>
                                         <div class="head">{"ログイン"}</div>
-                                            <div class="frame_form">
+                                        <div class="frame_form">
                                             <div class="login_mail">
                                                 <p>{"メールアドレス"}</p>
                                                 <input type="text" placeholder="Yutaka.FujiFuji@test.com" name="email" onchange={input_email} />
                                             </div>
                                             <div class="login_pass">
                                                 <p>{"パスワード"}</p>
-                                                <input type="password" placeholder="Password123@" name="psw" onchange={input_password}/>
+                                                <input type="password" placeholder="Password123@" name="psw" onchange={input_password} />
                                             </div>
-                                            <button id="login" onclick={link.callback(|_| Msg::SendLogin)}>{"ログイン"}</button>
-                                        <div>
-                                        <button>{"新規会員登録"}</button>
-                                        </div>
+                                            <input id="login" type="button" value="ログイン" onclick={link.callback(|_| Msg::SendLogin)} />
+                                            <div>
+                                                <button>{"新規会員登録"}</button>
+                                            </div>
                                             <a href="">
                                             <Link<Route> to={Route::Home}>{ "サンプルを見る" }</Link<Route>>
-                                        </a>
+                                            </a>
+                                        </div>
                                     </div>
-                                  </div>
                                 </div>
                             </div>
                       </>
