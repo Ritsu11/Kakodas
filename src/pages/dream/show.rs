@@ -1,5 +1,6 @@
+use crate::models::state::*;
 use crate::models::user::User;
-use crate::request::{request::fetch_dream, state::*};
+use crate::request::request::fetch_dream;
 use crate::router::route::Route;
 use yew::{html, Component, Context, Html, Properties};
 use yew_router::components::Link;

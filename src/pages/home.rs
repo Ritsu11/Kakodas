@@ -1,5 +1,6 @@
+use crate::models::state::*;
 use crate::models::user::UserDataList;
-use crate::request::{request::fetch_dream, state::*};
+use crate::request::request::fetch_dream;
 use crate::router::route::Route;
 use yew::{html, Component, Context, Html, Properties};
 use yew_router::components::Link;
@@ -50,13 +51,14 @@ impl Component for Home {
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
         match &self.response {
-            FetchState::NotFetching => html! {<></>},
-            FetchState::Fetching => html! {<></>},
+            FetchState::NotFetching => html! {<><div>{"Not Fetching"}</div></>},
+            FetchState::Fetching => html! {<><div>{"Fetching now"}</div></>},
             FetchState::Success(response) => {
                 let json: UserDataList = serde_json::from_str(&response).unwrap();
                 html! {
                     <>
-                        <Link<Route> to={Route::DreamShow}>{ "click here to go Dream" }</Link<Route>>
+                        <div><Link<Route> to={Route::DreamShow}>{ "click here to go Dream" }</Link<Route>></div>
+                        <div><Link<Route> to={Route::Login}>{ "click here to go Login" }</Link<Route>></div>
                         {
                             json.map(|data| {
                                 html! {
@@ -69,6 +71,7 @@ impl Component for Home {
                                 }
                             }).collect::<Html>()
                         }
+
                     </>
                 }
             }

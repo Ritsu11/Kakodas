@@ -29,3 +29,9 @@ impl From<JsValue> for FetchError {
         Self { err: value }
     }
 }
+
+// ログイン取得のstate
+pub enum LoginState {
+    Success,
+    Failed,
+}
