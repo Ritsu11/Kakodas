@@ -114,9 +114,9 @@
   text-decoration: none;
   letter-spacing: 0.15px;
   text-transform: uppercase;
-  color: #ffffff;
+  color: #eeeeee;
   margin: auto;
-  margin-left: 15px;
+  margin-left: 13px;
 }
 
 .cards_wrap {
@@ -127,11 +127,12 @@
   flex-wrap: wrap;
 }
 .card {
-  width: 450px;
-  height: 550px;
+  width: 350px;
+  height: 450px;
   /* height: 600px; */
   background: #888888;
   margin-bottom: 12px;
+  margin: 10px;
   display: block;
 }
 .card figure {

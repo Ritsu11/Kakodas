@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Dreams {
-    pub dream: DreamDataList,
+    pub dreams: DreamDataList,
     pub status_code: u32,
 }
 
@@ -10,8 +10,7 @@ pub struct Dreams {
 
 pub struct Dream {
     pub date: String,
-    pub description: String,
-    pub image_path: String,
+    pub dreamId: u32,
     pub title: String,
 }
 

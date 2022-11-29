@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::router::route::{self, *};
+use crate::router::route;
 
 // アプリのルーター設定
 #[function_component(App)]

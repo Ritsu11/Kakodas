@@ -1,7 +1,8 @@
-use crate::models::user::UserDataList;
-use crate::models::{dream::Dreams, state::*};
+use crate::models::{dreams::Dreams, state::*};
 use crate::router::route::Route;
 use crate::service::request::fetch_dream;
+use gloo::storage::LocalStorage;
+use gloo_storage::Storage;
 use yew::{html, Component, Context, Html, Properties};
 use yew_router::components::Link;
 
@@ -12,6 +13,7 @@ pub struct Home {
 pub enum Msg {
     SetFetchState(FetchState<String>),
     FetchStart,
+    Logout,
 }
 
 #[derive(PartialEq, Properties)]
@@ -37,7 +39,7 @@ impl Component for Home {
             }
             Msg::FetchStart => {
                 ctx.link().send_future(async {
-                    match fetch_dream("http://localhost:8080/dreams?user_id=1").await {
+                    match fetch_dream("http://localhost:9000/dreams?user_id=1").await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
@@ -46,10 +48,18 @@ impl Component for Home {
                     .send_message(Msg::SetFetchState(FetchState::Fetching));
                 false
             }
+            Msg::Logout => {
+                LocalStorage::delete("login");
+                LocalStorage::delete("id");
+                true
+            }
         }
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let link = ctx.link();
+        let login_state: Option<bool> = LocalStorage::get("login").unwrap_or_default();
+
         match &self.response {
             FetchState::NotFetching => html! {<><div>{"Not Fetching"}</div></>},
             FetchState::Fetching => {
@@ -63,8 +73,13 @@ impl Component for Home {
                         <div class="header">
                             <img class="logo" src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo" />
                             <div class="header_btn">
-                                <div class="sakusei"><Link<Route> to={Route::DreamShow}>{"作成"}</Link<Route>></div>
-                                <div class="log-out"><div><Link<Route> to={Route::Login}>{"ログアウト"}</Link<Route>></div></div>
+                                if let Some(true) = login_state {
+                                    <div class="sakusei"><Link<Route> to={Route::DreamAdd}>{"作成"}</Link<Route>></div>
+                                    <div class="log-out"><a onclick={link.callback(|_| Msg::Logout)}>{"ログアウト"}</a></div>
+                                } else {
+                                    <div class="sakusei"><Link<Route> to={Route::Register}>{"新規"}</Link<Route>></div>
+                                    <div class="log-out"><Link<Route> to={Route::Login}>{"ログイン"}</Link<Route>></div>
+                                }
                             </div>
                         </div>
                         <div class="cards_wrap">
@@ -74,7 +89,7 @@ impl Component for Home {
                                     <>
                                         <div class="card">
                                             <figure>
-                                                <img src="" alt="" />
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
                                                 <figcaption>
                                                     <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.dreamId}</p>
                                                 </figcaption>
