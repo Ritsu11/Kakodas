@@ -1,14 +1,14 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::router::route::{self};
+use crate::router::route::{self, *};
 
-// App Render Routing
+// アプリのルーター設定
 #[function_component(App)]
 pub fn app() -> Html {
     html! {
         <BrowserRouter>
-             <Switch<route::Route> render={Switch::render(route::switch)} />
+            <Switch<route::Route> render={route::switch} />
         </BrowserRouter>
     }
 }

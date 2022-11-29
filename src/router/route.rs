@@ -5,7 +5,7 @@ use crate::pages::auth::*;
 use crate::pages::dream::*;
 use crate::pages::*;
 
-// Setting RouteURL
+// ルーティングURL設定
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
     #[at("/")]
@@ -24,13 +24,13 @@ pub enum Route {
     NotFound,
 }
 
-// Switch Routing
-pub fn switch(routes: &Route) -> Html {
+// ルーター設定
+pub fn switch(routes: Route) -> Html {
     match routes {
         // MainHomePage Routing
         Route::Home => {
             html! {
-                <home::Home />
+            <home::Home />
             }
         }
 

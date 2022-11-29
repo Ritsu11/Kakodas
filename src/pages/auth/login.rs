@@ -1,7 +1,7 @@
 use crate::models::state::*;
 use crate::models::user::*;
 use crate::router::route::Route;
-use crate::{models::form::Form, request::request::request_login};
+use crate::{models::form::Form, service::request::request_login};
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
 use wasm_bindgen::JsCast;
@@ -37,8 +37,8 @@ impl Component for Login {
 
         Self {
             form: Form {
-                email: "".to_string(),
-                password: "".to_string(),
+                email: "None".to_string(),
+                password: "None".to_string(),
             },
             response: FetchState::NotFetching,
             state: LoginState::Failed,
@@ -59,10 +59,10 @@ impl Component for Login {
                 let email = &self.form.email;
                 let password = &self.form.password;
                 let request = User {
-                    id: 1,
+                    id: 113,
                     title: email.clone(),
                     body: password.clone(),
-                    userId: 1,
+                    userId: 143,
                 };
 
                 ctx.link().send_future(async {
@@ -73,11 +73,7 @@ impl Component for Login {
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
                 });
-                // LocalStorage::set("login", true).ok();
-                // LocalStorage::set("id", 10).ok();
-                // ctx.link()
-                //     .send_message(Msg::SetLoginState(LoginState::Success));
-                false
+                true
             }
             Msg::SetFetchState(fetch_state) => {
                 self.response = fetch_state;
@@ -93,15 +89,15 @@ impl Component for Login {
                 true
             }
             Msg::CheckLogin => {
-                let login_status: Option<bool> = LocalStorage::get("login").unwrap_or_default();
-                let id_status: Option<i32> = LocalStorage::get("id").unwrap_or_default();
+                let login_state: Option<bool> = LocalStorage::get("login").unwrap_or_default();
+                let id_state: Option<i32> = LocalStorage::get("id").unwrap_or_default();
 
-                ctx.link().send_message(match login_status {
-                    Some(_) => match id_status {
+                ctx.link().send_message(match login_state {
+                    Some(_) => match id_state {
                         Some(_) => Msg::SetLoginState(LoginState::Success),
                         None => {
                             LocalStorage::delete("login");
-                            Msg::SetLoginState(LoginState::Success)
+                            Msg::SetLoginState(LoginState::Failed)
                         }
                     },
                     None => {
@@ -142,47 +138,42 @@ impl Component for Login {
 
                     html! {
                       <>
-                            <div><Link<Route> to={Route::Home}>{ "click here to go Home" }</Link<Route>></div>
-
-                            <div class="wrap">
-                                <div class="frame">
-                                    <div class="frame_contents">
-                                        <div class="logo"><img src="aaa.png" alt="logo"/></div>
-                                        <div class="head">{"ログイン"}</div>
-                                        <div class="frame_form">
-                                            <div class="login_mail">
-                                                <p>{"メールアドレス"}</p>
-                                                <input type="text" placeholder="Yutaka.FujiFuji@test.com" name="email" onchange={input_email} />
-                                            </div>
-                                            <div class="login_pass">
-                                                <p>{"パスワード"}</p>
-                                                <input type="password" placeholder="Password123@" name="psw" onchange={input_password} />
-                                            </div>
+                        <div class="wrap_login">
+                            <div class="frame">
+                                <div class="frame_contents">
+                                    <div class="logo_login"><img src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo"/></div>
+                                    <div class="head">{"ログイン"}</div>
+                                    <div class="frame_form">
+                                        <div class="login_mail">
+                                            <p>{"メールアドレス"}</p>
+                                            <input type="text" placeholder="Yutaka.FujiFuji@test.com" name="email" onchange={input_email} />
+                                        </div>
+                                        <div class="login_pass">
+                                            <p>{"パスワード"}</p>
+                                            <input type="password" placeholder="Password123@" name="psw" onchange={input_password} />
+                                        </div>
                                             <input id="login" type="button" value="ログイン" onclick={link.callback(|_| Msg::SendLogin)} />
-                                            <div>
-                                                <button>{"新規会員登録"}</button>
-                                            </div>
-                                            <a href="">
+                                        <div class="link">
+                                            <Link<Route> to={Route::Register}>{ "新規会員登録" }</Link<Route>>
+                                        </div>
+                                        <div class="link2">
                                             <Link<Route> to={Route::Home}>{ "サンプルを見る" }</Link<Route>>
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="loader">{"Loading..."}</div>
                       </>
                     }
                 }
-                FetchState::Fetching => html! {<><div>{"Fetching now"}</div></>},
+                FetchState::Fetching => html! {<><div class="loader">{"Loading..."}</div></>},
                 FetchState::Success(response) => {
                     let json: User = serde_json::from_str(&response).unwrap();
+                    LocalStorage::set("login", true).ok();
+                    LocalStorage::set("id", json.userId).ok();
                     html! {
-                        <>
-                            <Link<Route> to={Route::Home}>{ "click here to go Home" }</Link<Route>>
-                            <div>{json.id}</div>
-                            <div>{json.title}</div>
-                            <div>{json.body}</div>
-                            <div>{json.userId}</div>
-                        </>
+                        <Redirect<Route> to={Route::Home}/>
                     }
                 }
                 FetchState::Failed(err) => html! { err },
