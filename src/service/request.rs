@@ -64,6 +64,6 @@ pub async fn request_login(url: &str, form: Form) -> Result<String, FetchError> 
     let resp: Response = resp_value.dyn_into().unwrap();
 
     let text = JsFuture::from(resp.text()?).await?;
-    log::info!("Reponse: {:?}", &text.as_string().unwrap());
+    log::info!("Response: {:?}", &text.as_string().unwrap());
     Ok(text.as_string().unwrap())
 }
