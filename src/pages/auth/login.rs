@@ -1,16 +1,16 @@
-use crate::models::state::*;
-use crate::models::user::*;
+use crate::models::response::state::*;
+use crate::models::*;
 use crate::router::route::Route;
-use crate::{models::form::Form, service::request::request_login};
+use crate::service::request::request_login;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
-use yew::{events::Event, html, Component, Context, Html, Properties};
+use yew::{events::Event, html, Component, Context, Html};
 use yew_router::prelude::*;
 
 pub struct Login {
-    form: Form,
+    form: request::form::Form,
     response: FetchState<String>,
     state: LoginState,
 }
@@ -25,18 +25,15 @@ pub enum Msg {
     SetLoginState(LoginState),
 }
 
-#[derive(PartialEq, Properties)]
-pub struct Props;
-
 impl Component for Login {
     type Message = Msg;
-    type Properties = Props;
+    type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
         ctx.link().send_message(Msg::CheckLogin);
 
         Self {
-            form: Form {
+            form: request::form::Form {
                 email: "None".to_string(),
                 password: "None".to_string(),
             },
@@ -58,17 +55,13 @@ impl Component for Login {
             Msg::SendLogin => {
                 let email = &self.form.email;
                 let password = &self.form.password;
-                let request = User {
-                    id: 113,
-                    title: email.clone(),
-                    body: password.clone(),
-                    userId: 143,
+                let request = request::form::Form {
+                    email: email.clone(),
+                    password: password.clone(),
                 };
 
                 ctx.link().send_future(async {
-                    match request_login("https://jsonplaceholder.typicode.com/posts/1", request)
-                        .await
-                    {
+                    match request_login("http://localhost:9000/users/sign-in", request).await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
@@ -169,9 +162,9 @@ impl Component for Login {
                 }
                 FetchState::Fetching => html! {<><div class="loader">{"Loading..."}</div></>},
                 FetchState::Success(response) => {
-                    let json: User = serde_json::from_str(&response).unwrap();
-                    LocalStorage::set("login", true).ok();
-                    LocalStorage::set("id", json.userId).ok();
+                    let json: response::form::Form = serde_json::from_str(&response).unwrap();
+                    LocalStorage::set("login", json.login_flg).ok();
+                    LocalStorage::set("id", json.id).ok();
                     html! {
                         <Redirect<Route> to={Route::Home}/>
                     }

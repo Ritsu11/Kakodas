@@ -1,4 +1,4 @@
-use crate::models::{form::Form, state::FetchError, user::*};
+use crate::models::{request::form::Form, response::state::FetchError, response::user::*};
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::JsFuture;
@@ -10,6 +10,7 @@ pub async fn fetch_dream(url: &str) -> Result<String, FetchError> {
     let mut opts = RequestInit::new();
     opts.method("GET");
     opts.mode(RequestMode::Cors);
+    opts.credentials(web_sys::RequestCredentials::Include);
 
     let request = Request::new_with_str_and_init(url, &opts)?;
 
@@ -26,7 +27,7 @@ pub async fn fetch_dream(url: &str) -> Result<String, FetchError> {
 pub async fn fetch_user(url: &str) -> Result<String, FetchError> {
     let mut opts = RequestInit::new();
     opts.method("GET");
-    opts.mode(RequestMode::NoCors);
+    opts.mode(RequestMode::Cors);
 
     let request = Request::new_with_str_and_init(url, &opts)?;
 
@@ -41,10 +42,12 @@ pub async fn fetch_user(url: &str) -> Result<String, FetchError> {
 
 /// Post Request
 /// ログインリクエスト
-pub async fn request_login(url: &str, form: User) -> Result<String, FetchError> {
+pub async fn request_login(url: &str, form: Form) -> Result<String, FetchError> {
     let form = serde_json::to_string(&form).unwrap();
     let mut opts = RequestInit::new();
-    opts.method("PUT");
+    opts.method("POST");
+    opts.mode(RequestMode::Cors);
+    opts.credentials(web_sys::RequestCredentials::Include);
     opts.body(Some(&JsValue::from_str(&form)));
     log::info!("Update: {:?}", &form);
 
@@ -54,7 +57,7 @@ pub async fn request_login(url: &str, form: User) -> Result<String, FetchError> 
         .set("Content-Type", "application/json; charset=UTF-8")?;
     request
         .headers()
-        .set("Set-Cookie", "SameSite=None; Secure")?;
+        .set("Access-Control-Allow-Credentials", "true")?;
 
     let window = gloo::utils::window();
     let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;

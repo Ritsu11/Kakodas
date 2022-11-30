@@ -1,4 +1,4 @@
-use crate::models::{dream::Dreams, state::*};
+use crate::models::{response::dream::*, response::state::*};
 use crate::router::route::Route;
 use crate::service::request::fetch_dream;
 use yew::{html, Component, Context, Html, Properties};

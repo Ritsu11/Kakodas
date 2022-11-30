@@ -1,4 +1,4 @@
-use crate::models::{dreams::Dreams, state::*};
+use crate::models::{response::dreams::Dreams, response::state::*};
 use crate::router::route::Route;
 use crate::service::request::fetch_dream;
 use gloo::storage::LocalStorage;

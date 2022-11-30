@@ -887,12 +887,12 @@ function getImports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper8658 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 709, __wbg_adapter_32);
+    imports.wbg.__wbindgen_closure_wrapper8632 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 707, __wbg_adapter_32);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper8895 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 731, __wbg_adapter_35);
+    imports.wbg.__wbindgen_closure_wrapper8869 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 729, __wbg_adapter_35);
         return addHeapObject(ret);
     };
 
@@ -931,7 +931,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('Misoten-5b6772cd01c476b6_bg.wasm', import.meta.url);
+        input = new URL('Misoten-729b1d80b5b23b8b_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
