@@ -36,7 +36,7 @@ impl Component for Show {
             }
             Msg::FetchStart => {
                 ctx.link().send_future(async {
-                    match fetch_dream("http://localhost:9000/dreams/reading?dream_id=1").await {
+                    match fetch_dream("http://localhost:9000/dreams/reading?dream_id=2").await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
