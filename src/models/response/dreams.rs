@@ -7,10 +7,10 @@ pub struct Dreams {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-
+#[serde(rename_all = "camelCase")]
 pub struct Dream {
     pub date: String,
-    pub dreamId: u32,
+    pub dream_id: u32,
     pub title: String,
 }
 

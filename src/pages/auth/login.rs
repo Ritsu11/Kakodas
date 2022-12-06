@@ -1,9 +1,5 @@
-use crate::models::response::state::*;
-use crate::models::*;
-use crate::router::route::Route;
-use crate::service::request::request_login;
-use gloo::storage::LocalStorage;
-use gloo_storage::Storage;
+use crate::{models::state::*, models::*, router::route::Route, service::request::post_request};
+use gloo::storage::{LocalStorage, Storage};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Component, Context, Html};
@@ -16,13 +12,13 @@ pub struct Login {
 }
 
 pub enum Msg {
-    CheckLogin,
     FetchStart,
+    SetFetchState(FetchState<String>),
+    CheckLogin,
+    SetLoginState(LoginState),
     InputEmail(String),
     InputPassword(String),
     SendLogin,
-    SetFetchState(FetchState<String>),
-    SetLoginState(LoginState),
 }
 
 impl Component for Login {
@@ -44,41 +40,13 @@ impl Component for Login {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::InputEmail(arg) => {
-                self.form.email = arg.to_string();
-                true
-            }
-            Msg::InputPassword(arg) => {
-                self.form.password = arg.to_string();
-                true
-            }
-            Msg::SendLogin => {
-                let email = &self.form.email;
-                let password = &self.form.password;
-                let request = request::form::Form {
-                    email: email.clone(),
-                    password: password.clone(),
-                };
-
-                ctx.link().send_future(async {
-                    match request_login("http://localhost:9000/users/sign-in", request).await {
-                        Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
-                        Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
-                    }
-                });
-                true
-            }
-            Msg::SetFetchState(fetch_state) => {
-                self.response = fetch_state;
-                true
-            }
             Msg::FetchStart => {
                 ctx.link()
                     .send_message(Msg::SetFetchState(FetchState::Fetching));
                 false
             }
-            Msg::SetLoginState(login_state) => {
-                self.state = login_state;
+            Msg::SetFetchState(fetch_state) => {
+                self.response = fetch_state;
                 true
             }
             Msg::CheckLogin => {
@@ -96,6 +64,34 @@ impl Component for Login {
                     None => {
                         LocalStorage::delete("id");
                         Msg::SetLoginState(LoginState::Failed)
+                    }
+                });
+                true
+            }
+            Msg::SetLoginState(login_state) => {
+                self.state = login_state;
+                true
+            }
+            Msg::InputEmail(arg) => {
+                self.form.email = arg.to_string();
+                true
+            }
+            Msg::InputPassword(arg) => {
+                self.form.password = arg.to_string();
+                true
+            }
+            Msg::SendLogin => {
+                let email = &self.form.email;
+                let password = &self.form.password;
+                let request = request::form::Form {
+                    email: email.clone(),
+                    password: password.clone(),
+                };
+
+                ctx.link().send_future(async {
+                    match post_request("http://localhost:9000/users/sign-in", request).await {
+                        Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
+                        Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
                 });
                 true

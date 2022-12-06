@@ -1,16 +1,14 @@
-use crate::models::{request::form::Form, response::state::FetchError, response::user::*};
-use wasm_bindgen::JsCast;
-use wasm_bindgen::JsValue;
+use crate::{models::request::form::Form, models::state::*};
+use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{Request, RequestInit, RequestMode, Response};
+use web_sys::{Request, RequestCredentials, RequestInit, RequestMode, Response};
 
-/// Get Requests
-/// 夢記録取得リクエスト
-pub async fn fetch_dream(url: &str) -> Result<String, FetchError> {
+/// ゲットリクエスト
+pub async fn get_request(url: &str) -> Result<String, FetchError> {
     let mut opts = RequestInit::new();
     opts.method("GET");
     opts.mode(RequestMode::Cors);
-    opts.credentials(web_sys::RequestCredentials::Include);
+    opts.credentials(RequestCredentials::Include);
 
     let request = Request::new_with_str_and_init(url, &opts)?;
 
@@ -23,31 +21,40 @@ pub async fn fetch_dream(url: &str) -> Result<String, FetchError> {
     Ok(text.as_string().unwrap())
 }
 
-/// ユーザー情報取得リクエスト
-pub async fn fetch_user(url: &str) -> Result<String, FetchError> {
-    let mut opts = RequestInit::new();
-    opts.method("GET");
-    opts.mode(RequestMode::Cors);
-
-    let request = Request::new_with_str_and_init(url, &opts)?;
-
-    let window = gloo::utils::window();
-    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
-    let resp: Response = resp_value.dyn_into().unwrap();
-
-    let text = JsFuture::from(resp.text()?).await?;
-    log::info!("Response: {:?}", &text.as_string().unwrap());
-    Ok(text.as_string().unwrap())
-}
-
-/// Post Request
-/// ログインリクエスト
-pub async fn request_login(url: &str, form: Form) -> Result<String, FetchError> {
+/// ポストリクエスト
+pub async fn post_request(url: &str, form: Form) -> Result<String, FetchError> {
     let form = serde_json::to_string(&form).unwrap();
     let mut opts = RequestInit::new();
     opts.method("POST");
     opts.mode(RequestMode::Cors);
-    opts.credentials(web_sys::RequestCredentials::Include);
+    opts.credentials(RequestCredentials::Include);
+    opts.body(Some(&JsValue::from_str(&form)));
+    log::info!("Update: {:?}", &form);
+
+    let request = Request::new_with_str_and_init(url, &opts)?;
+    request
+        .headers()
+        .set("Content-Type", "application/json; charset=UTF-8")?;
+    request
+        .headers()
+        .set("Access-Control-Allow-Credentials", "true")?;
+
+    let window = gloo::utils::window();
+    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+    let resp: Response = resp_value.dyn_into().unwrap();
+
+    let text = JsFuture::from(resp.text()?).await?;
+    log::info!("Response: {:?}", &text.as_string().unwrap());
+    Ok(text.as_string().unwrap())
+}
+
+/// プットリクエスト
+pub async fn put_request(url: &str, form: Form) -> Result<String, FetchError> {
+    let form = serde_json::to_string(&form).unwrap();
+    let mut opts = RequestInit::new();
+    opts.method("PUT");
+    opts.mode(RequestMode::Cors);
+    opts.credentials(RequestCredentials::Include);
     opts.body(Some(&JsValue::from_str(&form)));
     log::info!("Update: {:?}", &form);
 

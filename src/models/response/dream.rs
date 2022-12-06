@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Dreams {
-    pub dream: DreamDataList,
+    pub dreams: DreamDataList,
     pub status_code: u32,
 }
 

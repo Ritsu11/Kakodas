@@ -1,6 +1,7 @@
-use crate::models::{response::dreams::Dreams, response::state::*};
+use crate::models::response::dreams::Dreams;
+use crate::models::state::*;
 use crate::router::route::Route;
-use crate::service::request::fetch_dream;
+use crate::service::request::get_request;
 use gloo::storage::LocalStorage;
 use gloo_storage::Storage;
 use yew::{html, Component, Context, Html, Properties};
@@ -39,7 +40,7 @@ impl Component for Home {
             }
             Msg::FetchStart => {
                 ctx.link().send_future(async {
-                    match fetch_dream("http://localhost:9000/dreams?user_id=1").await {
+                    match get_request("http://localhost:9000/dreams?user_id=1").await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
@@ -91,7 +92,7 @@ impl Component for Home {
                                             <figure>
                                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
                                                 <figcaption>
-                                                    <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.dreamId}</p>
+                                                    <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.dream_id}</p>
                                                 </figcaption>
                                             </figure>
                                         </div>

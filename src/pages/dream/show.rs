@@ -1,6 +1,8 @@
-use crate::models::{response::dream::*, response::state::*};
-use crate::router::route::Route;
-use crate::service::request::fetch_dream;
+use crate::{
+    models::response::dream::*, models::state::*, router::route::Route,
+    service::request::get_request,
+};
+use gloo::storage::{LocalStorage, Storage};
 use yew::{html, Component, Context, Html, Properties};
 use yew_router::components::Link;
 
@@ -30,13 +32,12 @@ impl Component for Show {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::SetFetchState(fetch_state) => {
-                self.response = fetch_state;
-                true
-            }
             Msg::FetchStart => {
                 ctx.link().send_future(async {
-                    match fetch_dream("http://localhost:9000/dreams/reading?dream_id=1").await {
+                    let id_state: u32 = LocalStorage::get("id").unwrap();
+                    let url = format!("http://localhost:9000/dreams?user_id={id}", id = id_state);
+
+                    match get_request(&url.to_string()).await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
@@ -44,6 +45,10 @@ impl Component for Show {
                 ctx.link()
                     .send_message(Msg::SetFetchState(FetchState::Fetching));
                 false
+            }
+            Msg::SetFetchState(fetch_state) => {
+                self.response = fetch_state;
+                true
             }
         }
     }
@@ -67,24 +72,24 @@ impl Component for Show {
                             </div>
                         </div>
                         <div class="cards_wrap">
-                        {
-                            json.dream.map(|data| {
-                                html! {
-                                    <>
-                                        <div class="card">
-                                            <figure>
-                                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
-                                                <figcaption>
-                                                    <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.description}</p>
-                                                </figcaption>
-                                            </figure>
-                                        </div>
-                                    </>
-                                }
-                            }).collect::<Html>()
-                        }
+                            {
+                                json.dreams.map(|data| {
+                                    html! {
+                                        <>
+                                            <div class="card">
+                                                <figure>
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
+                                                    <figcaption>
+                                                        <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.description}</p>
+                                                    </figcaption>
+                                                </figure>
+                                            </div>
+                                        </>
+                                    }
+                                }).collect::<Html>()
+                            }
                             </div>
-                        </div>
+                    </div>
                     </>
                 }
             }
