@@ -34,10 +34,14 @@ impl Component for Show {
         match msg {
             Msg::FetchStart => {
                 ctx.link().send_future(async {
+<<<<<<< HEAD
                     let id_state: u32 = LocalStorage::get("id").unwrap();
                     let url = format!("http://localhost:9000/dreams?user_id={id}", id = id_state);
 
                     match get_request(&url.to_string()).await {
+=======
+                    match fetch_dream("http://localhost:9000/dreams/reading?dream_id=2").await {
+>>>>>>> main
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
