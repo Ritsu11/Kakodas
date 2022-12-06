@@ -18,7 +18,7 @@ pub enum Msg {
     SetLoginState(LoginState),
     InputEmail(String),
     InputPassword(String),
-    SendLogin,
+    RequestLogin,
 }
 
 impl Component for Login {
@@ -80,7 +80,7 @@ impl Component for Login {
                 self.form.password = arg.to_string();
                 true
             }
-            Msg::SendLogin => {
+            Msg::RequestLogin => {
                 let email = &self.form.email;
                 let password = &self.form.password;
                 let request = request::form::Form {
@@ -141,7 +141,7 @@ impl Component for Login {
                                             <p>{"パスワード"}</p>
                                             <input type="password" placeholder="Password123@" name="psw" onchange={input_password} />
                                         </div>
-                                            <input id="login" type="button" value="ログイン" onclick={link.callback(|_| Msg::SendLogin)} />
+                                            <input id="login" type="button" value="ログイン" onclick={link.callback(|_| Msg::RequestLogin)} />
                                         <div class="link">
                                             <Link<Route> to={Route::Register}>{ "新規会員登録" }</Link<Route>>
                                         </div>

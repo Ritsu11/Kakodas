@@ -84,24 +84,24 @@ impl Component for Home {
                             </div>
                         </div>
                         <div class="cards_wrap">
-                        {
-                            json.dreams.map(|data| {
-                                html! {
-                                    <>
-                                        <div class="card">
-                                            <figure>
-                                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
-                                                <figcaption>
-                                                    <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.dream_id}</p>
-                                                </figcaption>
-                                            </figure>
-                                        </div>
-                                    </>
-                                }
-                            }).collect::<Html>()
-                        }
-                            </div>
+                            {
+                                json.dreams.map(|data| {
+                                    html! {
+                                        <>
+                                            <div class="card">
+                                                <figure>
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
+                                                    <figcaption>
+                                                        <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.dream_id}</p>
+                                                    </figcaption>
+                                                </figure>
+                                            </div>
+                                        </>
+                                    }
+                                }).collect::<Html>()
+                            }
                         </div>
+                    </div>
                     </>
                 }
             }
