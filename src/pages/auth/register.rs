@@ -142,7 +142,7 @@ impl Component for Register {
                                             <input type="password" placeholder="Password123@" name="psw" onchange={input_password} />
                                         </div>
                                             <input id="login" type="button" value="登録" onclick={link.callback(|_| Msg::RequestRegister)} />
-                                        <div class="link">
+                                        <div class="link4">
                                             <Link<Route> to={Route::Home}>{ "サンプルを見る" }</Link<Route>>
                                         </div>
                                     </div>

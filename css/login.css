@@ -123,13 +123,23 @@ body {
 }
 
 .link {
-  margin-top: 45px;
-  margin-left: 17px;
+  margin-top: 32px;
+  margin-left: 22px;
 }
 
 .link2 {
   margin-top: 18px;
-  margin-left: 10px;
+  margin-left: 14px;
+}
+
+.link3 {
+  margin-top: 35px;
+  margin-left: 25px;
+}
+
+.link4 {
+  margin-top: 50px;
+  margin-left: 17px;
 }
 
 .frame_form a {

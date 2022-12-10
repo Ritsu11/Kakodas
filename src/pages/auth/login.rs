@@ -30,8 +30,8 @@ impl Component for Login {
 
         Self {
             form: request::form::Form {
-                email: "None".to_string(),
-                password: "None".to_string(),
+                email: "".to_string(),
+                password: "".to_string(),
             },
             response: FetchState::NotFetching,
             state: LoginState::Failed,
