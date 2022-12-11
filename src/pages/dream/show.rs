@@ -1,32 +1,34 @@
 use crate::{
-    models::response::dream::*, models::state::*, router::route::Route,
-    service::request::get_request,
+    components::fetch_err::FetchErr, components::not_found::NotFound, models::response::dream::*,
+    models::state::*, router::route::Route, service::request::get_request,
 };
 use gloo::storage::{LocalStorage, Storage};
-use yew::{html, Component, Context, Html, Properties};
+use yew::{html, Component, Context, Html};
 use yew_router::components::Link;
 
 pub struct Show {
     response: FetchState<String>,
+    state: LoginState,
 }
 
 pub enum Msg {
-    SetFetchState(FetchState<String>),
     FetchStart,
+    SetFetchState(FetchState<String>),
+    CheckLogin,
+    SetLoginState(LoginState),
+    Logout,
 }
-
-#[derive(PartialEq, Properties)]
-pub struct Props;
 
 impl Component for Show {
     type Message = Msg;
-    type Properties = Props;
+    type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
         ctx.link().send_message(Msg::FetchStart);
 
         Self {
             response: FetchState::NotFetching,
+            state: LoginState::Failed,
         }
     }
 
@@ -50,50 +52,105 @@ impl Component for Show {
                 self.response = fetch_state;
                 true
             }
+            Msg::CheckLogin => {
+                let login_state: Option<bool> = LocalStorage::get("login").unwrap_or_default();
+                let id_state: Option<i32> = LocalStorage::get("id").unwrap_or_default();
+
+                ctx.link().send_message(match login_state {
+                    Some(_) => match id_state {
+                        Some(_) => Msg::SetLoginState(LoginState::Success),
+                        None => {
+                            LocalStorage::delete("login");
+                            Msg::SetLoginState(LoginState::Failed)
+                        }
+                    },
+                    None => {
+                        LocalStorage::delete("id");
+                        Msg::SetLoginState(LoginState::Failed)
+                    }
+                });
+                true
+            }
+            Msg::SetLoginState(login_state) => {
+                self.state = login_state;
+                true
+            }
+            Msg::Logout => {
+                LocalStorage::delete("login");
+                LocalStorage::delete("id");
+                true
+            }
         }
     }
 
-    fn view(&self, _ctx: &Context<Self>) -> Html {
-        match &self.response {
-            FetchState::NotFetching => html! {<><div>{"Not Fetching"}</div></>},
-            FetchState::Fetching => {
-                html! {<><div>{"Fetching now"}</div><div class="loader">{"Loading..."}</div></>}
-            }
-            FetchState::Success(response) => {
-                let json: Dreams = serde_json::from_str(&response).unwrap();
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let link = ctx.link();
+
+        match &self.state {
+            LoginState::Success => {
                 html! {
-                    <>
-                    <div class="wrap">
-                        <div class="header">
-                            <img class="logo" src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo" />
-                            <div class="header_btn">
-                                <div class="sakusei"><Link<Route> to={Route::Home}>{"作成"}</Link<Route>></div>
-                                <div class="log-out"><div><Link<Route> to={Route::Login}>{"ログアウト"}</Link<Route>></div></div>
-                            </div>
-                        </div>
-                        <div class="cards_wrap">
-                            {
-                                json.dreams.map(|data| {
-                                    html! {
-                                        <>
-                                            <div class="card">
-                                                <figure>
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
-                                                    <figcaption>
-                                                        <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.description}</p>
-                                                    </figcaption>
-                                                </figure>
-                                            </div>
-                                        </>
-                                    }
-                                }).collect::<Html>()
-                            }
-                        </div>
-                    </div>
-                    </>
+                  <>
+                    // <Redirect<Route> to={Route::DreamShow}/>
+                  </>
                 }
             }
-            FetchState::Failed(err) => html! { err },
+            LoginState::Failed => match &self.response {
+                FetchState::NotFetching => html! {
+                    html! {
+                        <>
+                            <NotFound />
+                        </>
+                    }
+                },
+                FetchState::Fetching => {
+                    html! {
+                        <>
+                            <div class="loader">{"Loading..."}</div>
+                        </>
+                    }
+                }
+                FetchState::Success(response) => {
+                    let json: Dreams = serde_json::from_str(&response).unwrap();
+                    html! {
+                        <>
+                        <div class="wrap">
+                            <div class="header">
+                                <img class="logo" src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo" />
+                                <div class="header_btn_logout">
+                                    <div class="sakusei"><Link<Route> to={Route::DreamAdd}>{"作成"}</Link<Route>></div>
+                                    <div class="log-out"><a onclick={link.callback(|_| Msg::Logout)}>{"ログアウト"}</a></div>
+                                </div>
+                            </div>
+                            <div class="cards_wrap">
+                                {
+                                    json.dreams.map(|data| {
+                                        html! {
+                                            <>
+                                                <div class="card">
+                                                    <figure>
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
+                                                        <figcaption>
+                                                            <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.description}</p>
+                                                        </figcaption>
+                                                    </figure>
+                                                </div>
+                                            </>
+                                        }
+                                    }).collect::<Html>()
+                                }
+                            </div>
+                        </div>
+                        </>
+                    }
+                }
+                FetchState::Failed(_) => {
+                    html! {
+                        <>
+                            <FetchErr />
+                        </>
+                    }
+                }
+            },
         }
     }
 }

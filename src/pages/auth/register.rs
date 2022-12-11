@@ -1,4 +1,7 @@
-use crate::{models::state::*, models::*, router::route::Route, service::request::post_request};
+use crate::{
+    components::not_found::NotFound, models::state::*, models::*, router::route::Route,
+    service::request::post_request,
+};
 use gloo::storage::{LocalStorage, Storage};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
@@ -30,8 +33,8 @@ impl Component for Register {
 
         Self {
             form: request::form::Form {
-                email: "None".to_string(),
-                password: "None".to_string(),
+                email: "".to_string(),
+                password: "".to_string(),
             },
             response: FetchState::NotFetching,
             state: LoginState::Failed,
@@ -43,7 +46,7 @@ impl Component for Register {
             Msg::FetchStart => {
                 ctx.link()
                     .send_message(Msg::SetFetchState(FetchState::Fetching));
-                false
+                true
             }
             Msg::SetFetchState(fetch_state) => {
                 self.response = fetch_state;
@@ -149,20 +152,72 @@ impl Component for Register {
                                 </div>
                             </div>
                         </div>
-                        <div class="loader">{"Loading..."}</div>
                       </>
                     }
                 }
                 FetchState::Fetching => html! {<><div class="loader">{"Loading..."}</div></>},
                 FetchState::Success(response) => {
-                    let json: response::form::Form = serde_json::from_str(&response).unwrap();
-                    LocalStorage::set("login", json.login_flg).ok();
-                    LocalStorage::set("id", json.id).ok();
-                    html! {
-                        <Redirect<Route> to={Route::Home}/>
+                    match serde_json::from_str::<response::form::Form>(&response) {
+                        Ok(json) => {
+                            LocalStorage::set("login", json.login_flg).ok();
+                            LocalStorage::set("id", json.id).ok();
+                            html! {
+                                <Redirect<Route> to={Route::Home}/>
+                            }
+                        }
+                        Err(_) => {
+                            let input_email = link.batch_callback(|e: Event| {
+                                let target: Option<EventTarget> = e.target();
+                                let input =
+                                    target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                                input.map(|input| Msg::InputEmail(input.value()))
+                            });
+                            let input_password = link.batch_callback(|e: Event| {
+                                let target: Option<EventTarget> = e.target();
+                                let input =
+                                    target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                                input.map(|input| Msg::InputPassword(input.value()))
+                            });
+
+                            html! {
+                              <>
+                                <div class="wrap_login">
+                                    <div class="frame">
+                                        <div class="frame_contents">
+                                            <div class="logo_login"><img src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo"/></div>
+                                            <div class="head">{"新規会員登録"}</div>
+                                            <div class="frame_form">
+                                                <div class="login_mail">
+                                                    <p>{"メールアドレス"}</p>
+                                                    <input type="text" placeholder="Yutaka.FujiFuji@test.com" name="email" onchange={input_email} />
+                                                </div>
+                                                <div class="login_pass">
+                                                    <p>{"パスワード"}</p>
+                                                    <input type="password" placeholder="Password123@" name="psw" onchange={input_password} />
+                                                </div>
+                                                <div class="login_err">
+                                                    <p>{"登録済みのメールアドレスです"}</p>
+                                                </div>
+                                                    <input id="login" type="button" value="登録" onclick={link.callback(|_| Msg::RequestRegister)} />
+                                                <div class="link4">
+                                                    <Link<Route> to={Route::Home}>{ "サンプルを見る" }</Link<Route>>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                              </>
+                            }
+                        }
                     }
                 }
-                FetchState::Failed(err) => html! { err },
+                FetchState::Failed(_) => html! {
+                    <>
+                        <NotFound />
+                    </>
+                },
             },
         }
     }

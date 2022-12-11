@@ -1,4 +1,7 @@
-use crate::{models::state::*, models::*, router::route::Route, service::request::post_request};
+use crate::{
+    components::not_found::NotFound, models::state::*, models::*, router::route::Route,
+    service::request::post_request,
+};
 use gloo::storage::{LocalStorage, Storage};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
@@ -106,7 +109,7 @@ impl Component for Login {
             LoginState::Success => {
                 html! {
                   <>
-                    <Redirect<Route> to={Route::Home}/>
+                    <Redirect<Route> to={Route::DreamShow}/>
                   </>
                 }
             }
@@ -152,20 +155,75 @@ impl Component for Login {
                                 </div>
                             </div>
                         </div>
-                        <div class="loader">{"Loading..."}</div>
                       </>
                     }
                 }
                 FetchState::Fetching => html! {<><div class="loader">{"Loading..."}</div></>},
                 FetchState::Success(response) => {
-                    let json: response::form::Form = serde_json::from_str(&response).unwrap();
-                    LocalStorage::set("login", json.login_flg).ok();
-                    LocalStorage::set("id", json.id).ok();
-                    html! {
-                        <Redirect<Route> to={Route::Home}/>
+                    match serde_json::from_str::<response::form::Form>(&response) {
+                        Ok(json) => {
+                            LocalStorage::set("login", json.login_flg).ok();
+                            LocalStorage::set("id", json.id).ok();
+                            html! {
+                                <Redirect<Route> to={Route::DreamShow}/>
+                            }
+                        }
+                        Err(_) => {
+                            let input_email = link.batch_callback(|e: Event| {
+                                let target: Option<EventTarget> = e.target();
+                                let input =
+                                    target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                                input.map(|input| Msg::InputEmail(input.value()))
+                            });
+                            let input_password = link.batch_callback(|e: Event| {
+                                let target: Option<EventTarget> = e.target();
+                                let input =
+                                    target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                                input.map(|input| Msg::InputPassword(input.value()))
+                            });
+
+                            html! {
+                              <>
+                                <div class="wrap_login">
+                                    <div class="frame">
+                                        <div class="frame_contents">
+                                            <div class="logo_login"><img src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo"/></div>
+                                            <div class="head">{"ログイン"}</div>
+                                            <div class="frame_form">
+                                                <div class="login_mail">
+                                                    <p>{"メールアドレス"}</p>
+                                                    <input type="text" placeholder="Yutaka.FujiFuji@test.com" name="email" value={self.form.email.clone()} onchange={input_email} />
+                                                </div>
+                                                <div class="login_pass">
+                                                    <p>{"パスワード"}</p>
+                                                    <input type="password" placeholder="Password123@" name="psw" value={self.form.password.clone()} onchange={input_password} />
+                                                </div>
+                                                <div class="login_err">
+                                                    <p>{"メールアドレスまたはパスワードが違います"}</p>
+                                                </div>
+                                                    <input id="login" type="button" value="ログイン" onclick={link.callback(|_| Msg::RequestLogin)} />
+                                                <div class="link">
+                                                    <Link<Route> to={Route::Register}>{ "新規会員登録" }</Link<Route>>
+                                                </div>
+                                                <div class="link2">
+                                                    <Link<Route> to={Route::Home}>{ "サンプルを見る" }</Link<Route>>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                              </>
+                            }
+                        }
                     }
                 }
-                FetchState::Failed(err) => html! { err },
+                FetchState::Failed(_) => html! {
+                    <>
+                        <NotFound />
+                    </>
+                },
             },
         }
     }

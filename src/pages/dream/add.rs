@@ -89,12 +89,7 @@ impl Component for Add {
                                 <div class="sakusei_head">{" 夢作成 "}</div>
                                 <div class="sakusei_date">
                                     <p>{" 夢を見た日 "}</p>
-                                    <input
-                                        type="date"
-                                        value="2020-01-01"
-                                        min="2015-01-01"
-                                        max="2040-12-31"
-                                    />
+                                    <input type="date" value="2020-01-01" min="2015-01-01" max="2040-12-31" />
                                 </div>
                                 <div class="sakusei_title">
                                     <p>{" 夢のタイトル "}</p>

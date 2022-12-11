@@ -122,6 +122,14 @@ body {
   margin-bottom: 24px;
 }
 
+.login_err {
+  margin-top: -18px;
+  margin-bottom: 15px;
+  color: red;
+  font-size: 12px;
+  /* font-weight: thin; */
+}
+
 .link {
   margin-top: 32px;
   margin-left: 22px;
@@ -158,21 +166,3 @@ body {
   color: #444444;
   margin: auto;
 }
-
-/* button{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 18px 32px;
-    gap: 10px;
-    width: 150px;
-    height: 38px;
-    background: #CCCCCC;
-    box-shadow: -2px 2px 4px rgba(184, 184, 184, 0.2), 2px -2px 4px rgba(184, 184, 184, 0.2), -2px -2px 4px rgba(224, 224, 224, 0.9), 2px 2px 5px rgba(184, 184, 184, 0.9);
-    border-radius: 5px;
-    flex: none;
-    order: 3;
-    flex-grow: 0;
-    margin: 32px auto;
-} */
