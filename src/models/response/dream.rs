@@ -2,12 +2,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Dreams {
-    pub dreams: DreamDataList,
+    pub dream: DreamDataList,
     pub status_code: u32,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-
 pub struct Dream {
     pub date: String,
     pub description: String,

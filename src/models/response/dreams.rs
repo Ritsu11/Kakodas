@@ -7,11 +7,12 @@ pub struct Dreams {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct Dream {
     pub date: String,
-    pub dream_id: u32,
+    pub description: String,
+    pub image_path: String,
     pub title: String,
+    pub dreamId: u128,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

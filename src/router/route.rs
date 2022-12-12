@@ -6,7 +6,7 @@ use crate::pages::dream::*;
 use crate::pages::*;
 
 // ルーティングURL設定
-#[derive(Clone, Routable, PartialEq)]
+#[derive(Routable, PartialEq, Clone, Debug)]
 pub enum Route {
     #[at("/")]
     Home,
@@ -16,8 +16,8 @@ pub enum Route {
     Register,
     #[at("/dream_add")]
     DreamAdd,
-    #[at("/dream_edit")]
-    DreamEdit,
+    #[at("/dream_edit/:id")]
+    DreamEdit { id: u128 },
     #[at("/dream_show")]
     DreamShow,
     #[at("/404")]
@@ -52,9 +52,9 @@ pub fn switch(routes: Route) -> Html {
                 <add::Add />
             }
         }
-        Route::DreamEdit => {
+        Route::DreamEdit { id } => {
             html! {
-                <edit::Edit />
+                <edit::Edit id={id}/>
             }
         }
         Route::DreamShow => {

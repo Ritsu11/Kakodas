@@ -1,10 +1,12 @@
 use crate::{
-    components::fetch_err::FetchErr, components::not_found::NotFound, models::response::dream::*,
-    models::state::*, router::route::Route, service::request::get_request,
+    components::fetch_err::FetchErr, components::not_found::NotFound,
+    models::response::dreams::Dreams, models::state::*, router::route::Route,
+    service::request::get_request,
 };
-use gloo::storage::{LocalStorage, Storage};
+use gloo::storage::LocalStorage;
+use gloo_storage::Storage;
 use yew::{html, Component, Context, Html};
-use yew_router::components::Link;
+use yew_router::{components::Link, prelude::Redirect};
 
 pub struct Show {
     response: FetchState<String>,
@@ -78,6 +80,8 @@ impl Component for Show {
             Msg::Logout => {
                 LocalStorage::delete("login");
                 LocalStorage::delete("id");
+                ctx.link()
+                    .send_message(Msg::SetLoginState(LoginState::Success));
                 true
             }
         }
@@ -90,7 +94,7 @@ impl Component for Show {
             LoginState::Success => {
                 html! {
                   <>
-                    // <Redirect<Route> to={Route::DreamShow}/>
+                    <Redirect<Route> to={Route::Home}/>
                   </>
                 }
             }
@@ -118,7 +122,7 @@ impl Component for Show {
                                 <img class="logo" src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo" />
                                 <div class="header_btn_logout">
                                     <div class="sakusei"><Link<Route> to={Route::DreamAdd}>{"作成"}</Link<Route>></div>
-                                    <div class="log-out"><a onclick={link.callback(|_| Msg::Logout)}>{"ログアウト"}</a></div>
+                                    <div class="log-out"><p onclick={link.callback(|_| Msg::Logout)}>{"ログアウト"}</p></div>
                                 </div>
                             </div>
                             <div class="cards_wrap">
@@ -127,12 +131,14 @@ impl Component for Show {
                                         html! {
                                             <>
                                                 <div class="card">
-                                                    <figure>
+                                                    <Link<Route> to={Route::DreamEdit { id: data.dreamId}}>
+                                                        <figure>
                                                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
                                                         <figcaption>
                                                             <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.description}</p>
                                                         </figcaption>
-                                                    </figure>
+                                                        </figure>
+                                                    </Link<Route>>
                                                 </div>
                                             </>
                                         }
