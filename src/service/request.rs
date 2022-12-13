@@ -1,4 +1,4 @@
-use crate::{models::request::form::Form, models::state::*};
+use crate::{models::request::dream::Dream, models::request::form::Form, models::state::*};
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestCredentials, RequestInit, RequestMode, Response};
@@ -48,11 +48,10 @@ pub async fn post_request(url: &str, form: Form) -> Result<String, FetchError> {
     Ok(text.as_string().unwrap())
 }
 
-/// プットリクエスト
-pub async fn put_request(url: &str, form: Form) -> Result<String, FetchError> {
+pub async fn post_dream_request(url: &str, form: Dream) -> Result<String, FetchError> {
     let form = serde_json::to_string(&form).unwrap();
     let mut opts = RequestInit::new();
-    opts.method("PUT");
+    opts.method("POST");
     opts.mode(RequestMode::Cors);
     opts.credentials(RequestCredentials::Include);
     opts.body(Some(&JsValue::from_str(&form)));
@@ -74,3 +73,30 @@ pub async fn put_request(url: &str, form: Form) -> Result<String, FetchError> {
     log::info!("Response: {:?}", &text.as_string().unwrap());
     Ok(text.as_string().unwrap())
 }
+
+// プットリクエスト
+// pub async fn put_request(url: &str, form: Form) -> Result<String, FetchError> {
+//     let form = serde_json::to_string(&form).unwrap();
+//     let mut opts = RequestInit::new();
+//     opts.method("PUT");
+//     opts.mode(RequestMode::Cors);
+//     opts.credentials(RequestCredentials::Include);
+//     opts.body(Some(&JsValue::from_str(&form)));
+//     log::info!("Update: {:?}", &form);
+
+//     let request = Request::new_with_str_and_init(url, &opts)?;
+//     request
+//         .headers()
+//         .set("Content-Type", "application/json; charset=UTF-8")?;
+//     request
+//         .headers()
+//         .set("Access-Control-Allow-Credentials", "true")?;
+
+//     let window = gloo::utils::window();
+//     let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+//     let resp: Response = resp_value.dyn_into().unwrap();
+
+//     let text = JsFuture::from(resp.text()?).await?;
+//     log::info!("Response: {:?}", &text.as_string().unwrap());
+//     Ok(text.as_string().unwrap())
+// }

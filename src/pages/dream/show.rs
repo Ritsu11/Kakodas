@@ -94,7 +94,7 @@ impl Component for Show {
             LoginState::Success => {
                 html! {
                   <>
-                    <Redirect<Route> to={Route::Home}/>
+                    <Redirect<Route> to={ Route::Home }/>
                   </>
                 }
             }
@@ -109,7 +109,7 @@ impl Component for Show {
                 FetchState::Fetching => {
                     html! {
                         <>
-                            <div class="loader">{"Loading..."}</div>
+                            <div class="loader">{ "Loading..." }</div>
                         </>
                     }
                 }
@@ -121,8 +121,8 @@ impl Component for Show {
                             <div class="header">
                                 <img class="logo" src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo" />
                                 <div class="header_btn_logout">
-                                    <div class="sakusei"><Link<Route> to={Route::DreamAdd}>{"作成"}</Link<Route>></div>
-                                    <div class="log-out"><p onclick={link.callback(|_| Msg::Logout)}>{"ログアウト"}</p></div>
+                                    <div class="sakusei"><Link<Route> to={ Route::DreamAdd }>{ "作成" }</Link<Route>></div>
+                                    <div class="log-out"><p onclick={ link.callback(|_| Msg::Logout) }>{ "ログアウト" }</p></div>
                                 </div>
                             </div>
                             <div class="cards_wrap">
@@ -131,11 +131,11 @@ impl Component for Show {
                                         html! {
                                             <>
                                                 <div class="card">
-                                                    <Link<Route> to={Route::DreamEdit { id: data.dreamId}}>
+                                                    <Link<Route> to={ Route::DreamEdit { id: data.dreamId } }>
                                                         <figure>
                                                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
                                                         <figcaption>
-                                                            <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.description}</p>
+                                                            <p>{ data.date } <br /><strong>{ data.title }</strong><br/>{ data.description }</p>
                                                         </figcaption>
                                                         </figure>
                                                     </Link<Route>>

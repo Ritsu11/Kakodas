@@ -82,7 +82,7 @@ impl Component for Home {
             LoginState::Success => {
                 html! {
                   <>
-                    <Redirect<Route> to={Route::DreamShow}/>
+                    <Redirect<Route> to={ Route::DreamShow }/>
                   </>
                 }
             }
@@ -97,7 +97,7 @@ impl Component for Home {
                 FetchState::Fetching => {
                     html! {
                         <>
-                            <div class="loader">{"Loading..."}</div>
+                            <div class="loader">{ "Loading..." }</div>
                         </>
                     }
                 }
@@ -109,8 +109,8 @@ impl Component for Home {
                                 <div class="header">
                                     <img class="logo" src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo" />
                                     <div class="header_btn_login">
-                                        <div class="login"><Link<Route> to={Route::Login}>{"ログイン"}</Link<Route>></div>
-                                        <div class="registration"><Link<Route> to={Route::Register}>{"新規登録"}</Link<Route>></div>
+                                        <div class="login"><Link<Route> to={Route::Login}>{ "ログイン" }</Link<Route>></div>
+                                        <div class="registration"><Link<Route> to={Route::Register}>{ "新規登録" }</Link<Route>></div>
                                     </div>
                                 </div>
                                 <div class="cards_wrap">
@@ -122,7 +122,7 @@ impl Component for Home {
                                                         <figure>
                                                             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
                                                             <figcaption>
-                                                                <p>{data.date} <br /><strong>{data.title}</strong><br/>{data.dreamId}</p>
+                                                                <p>{ data.date } <br /><strong>{ data.title }</strong><br/>{ data.dreamId }</p>
                                                             </figcaption>
                                                         </figure>
                                                     </div>
@@ -142,19 +142,17 @@ impl Component for Home {
                             </>
                         }
                     }
-                    Err(err) => {
+                    Err(_) => {
                         html! {
                             <>
                                 <FetchErr />
-                                <p>{err}</p>
                             </>
                         }
                     }
                 },
-                FetchState::Failed(err) => {
+                FetchState::Failed(_) => {
                     html! {
                         <>
-                            <p>{err}</p>
                             <FetchErr />
                         </>
                     }

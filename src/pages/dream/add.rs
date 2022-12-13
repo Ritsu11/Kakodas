@@ -1,23 +1,30 @@
-use crate::{models::state::*, models::*, service::request::post_request};
+use crate::{
+    components::not_found::NotFound,
+    models::state::*,
+    models::{request::dream::Dream, *},
+    router::route::Route,
+    service::request::post_dream_request,
+};
 use gloo::storage::{LocalStorage, Storage};
 use wasm_bindgen::JsCast;
 use web_sys::{EventTarget, HtmlInputElement};
 use yew::{events::Event, html, Component, Context, Html};
 use yew_router::prelude::*;
 
-use crate::router::route::Route;
-
 pub struct Add {
-    form: request::dream_add::DreamAdd,
+    form: Dream,
     response: FetchState<String>,
     state: LoginState,
 }
 
 pub enum Msg {
-    FetchStart,
-    SetFetchState(FetchState<String>),
     CheckLogin,
+    SetFetchState(FetchState<String>),
     SetLoginState(LoginState),
+    InputDate(String),
+    InputTitle(String),
+    InputImageSentence(String),
+    InputImageDescription(String),
     RequestDreamAdd,
 }
 
@@ -29,8 +36,8 @@ impl Component for Add {
         ctx.link().send_message(Msg::CheckLogin);
 
         Self {
-            form: request::dream_add::DreamAdd {
-                user_id: 0,
+            form: Dream {
+                user_id: LocalStorage::get("id").expect("none"),
                 title: "".to_string(),
                 image_sentence: "".to_string(),
                 description: "".to_string(),
@@ -43,15 +50,6 @@ impl Component for Add {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::FetchStart => {
-                ctx.link()
-                    .send_message(Msg::SetFetchState(FetchState::Fetching));
-                false
-            }
-            Msg::SetFetchState(fetch_state) => {
-                self.response = fetch_state;
-                true
-            }
             Msg::CheckLogin => {
                 let login_state: Option<bool> = LocalStorage::get("login").unwrap_or_default();
                 let id_state: Option<i32> = LocalStorage::get("id").unwrap_or_default();
@@ -65,12 +63,50 @@ impl Component for Add {
                 });
                 true
             }
+            Msg::SetFetchState(fetch_state) => {
+                self.response = fetch_state;
+                true
+            }
             Msg::SetLoginState(login_state) => {
                 self.state = login_state;
                 true
             }
+            Msg::InputDate(arg) => {
+                self.form.date = arg;
+                true
+            }
+            Msg::InputTitle(arg) => {
+                self.form.title = arg;
+                true
+            }
+            Msg::InputImageSentence(arg) => {
+                self.form.image_sentence = arg;
+                true
+            }
+            Msg::InputImageDescription(arg) => {
+                self.form.description = arg;
+                true
+            }
             Msg::RequestDreamAdd => {
-                log::info!("Update: {:?}", "Click".to_owned());
+                let date = &self.form.date;
+                let title = &self.form.title;
+                let image_sentence = &self.form.image_sentence;
+                let description = &self.form.description;
+                let request = request::dream::Dream {
+                    user_id: self.form.user_id,
+                    title: title.clone(),
+                    image_sentence: image_sentence.clone(),
+                    description: description.clone(),
+                    date: date.clone(),
+                };
+
+                ctx.link().send_future(async {
+                    match post_dream_request("http://localhost:9000/dreams/register", request).await
+                    {
+                        Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
+                        Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
+                    }
+                });
                 true
             }
         }
@@ -81,6 +117,31 @@ impl Component for Add {
 
         match &self.state {
             LoginState::Success => {
+                let input_date = link.batch_callback(|e: Event| {
+                    let target: Option<EventTarget> = e.target();
+                    let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                    input.map(|input| Msg::InputDate(input.value()))
+                });
+                let input_title = link.batch_callback(|e: Event| {
+                    let target: Option<EventTarget> = e.target();
+                    let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                    input.map(|input| Msg::InputTitle(input.value()))
+                });
+                let input_image_sentence = link.batch_callback(|e: Event| {
+                    let target: Option<EventTarget> = e.target();
+                    let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                    input.map(|input| Msg::InputImageSentence(input.value()))
+                });
+                let input_description = link.batch_callback(|e: Event| {
+                    let target: Option<EventTarget> = e.target();
+                    let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+
+                    input.map(|input| Msg::InputImageDescription(input.value()))
+                });
+
                 html! {
                     <>
                     <div class="wrap_add">
@@ -88,25 +149,25 @@ impl Component for Add {
                             <div class="frame_contents_add">
                                 <div class="sakusei_head">{" 夢作成 "}</div>
                                 <div class="sakusei_date">
-                                    <p>{" 夢を見た日 "}</p>
-                                    <input type="date" value="2020-01-01" min="2015-01-01" max="2040-12-31" />
+                                    <p>{ "夢を見た日" }</p>
+                                    <input type="date" value="2020-01-01" min="2015-01-01" max="2040-12-31" onchange={ input_date } />
                                 </div>
                                 <div class="sakusei_title">
-                                    <p>{" 夢のタイトル "}</p>
-                                    <input type="text" placeholder="〇〇の夢" />
+                                    <p>{ "夢のタイトル" }</p>
+                                    <input type="text" placeholder="〇〇の夢" onchange={ input_title } />
                                 </div>
                                 <div class="sakusei_command">
-                                    <p>{" 夢の画像生成文 "}</p>
-                                    <textarea  maxlength="100" rows="2" placeholder="最大100文字"></textarea>
+                                    <p>{ "夢の画像生成文" }</p>
+                                    <input type="text" placeholder="最大100文字" onchange={ input_image_sentence } />
                                 </div>
                                 <div class="sakusei_explain">
-                                    <p>{" 夢の説明文 "}</p>
-                                    <textarea maxlength="500" rows="5" placeholder="最大100文字"></textarea>
+                                    <p>{ "夢の説明文" }</p>
+                                    <input type="text" placeholder="最大500文字" onchange={ input_description } />
                                 </div>
                                 <div class="frame_form">
-                                    <input id="dream_add" type="button" value="登録" onclick={link.callback(|_| Msg::RequestDreamAdd)} />
+                                    <input id="dream_add" type="button" value="登録" onclick={ link.callback(|_| Msg::RequestDreamAdd) } />
                                     <div class="link3">
-                                        <Link<Route> to={Route::Home}>{ "ホームに戻る" }</Link<Route>>
+                                        <Link<Route> to={ Route::Home }>{ "ホームに戻る" }</Link<Route>>
                                     </div>
                                 </div>
                             </div>
@@ -118,7 +179,7 @@ impl Component for Add {
             LoginState::Failed => {
                 html! {
                   <>
-                    <Redirect<Route> to={Route::Home}/>
+                    <Redirect<Route> to={ Route::Home }/>
                   </>
                 }
             }

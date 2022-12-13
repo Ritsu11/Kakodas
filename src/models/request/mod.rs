@@ -1,2 +1,2 @@
-pub mod dream_add;
+pub mod dream;
 pub mod form;

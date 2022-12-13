@@ -1,12 +1,14 @@
 use crate::{
-    components::fetch_err::FetchErr, components::not_found::NotFound, models::response::dream::*,
-    models::state::*, router::route::Route, service::request::get_request,
+    components::fetch_err::FetchErr, components::not_found::NotFound,
+    models::request::dream::Dream, models::response::dream::*, models::state::*,
+    router::route::Route, service::request::get_request,
 };
 use gloo::storage::{LocalStorage, Storage};
 use yew::{html, Component, Context, Html, Properties};
 use yew_router::{components::Link, prelude::Redirect};
 
 pub struct Edit {
+    form: Dream,
     response: FetchState<String>,
     state: LoginState,
     dream_id: u128,
@@ -32,6 +34,13 @@ impl Component for Edit {
         ctx.link().send_message(Msg::FetchStart);
 
         Self {
+            form: Dream {
+                user_id: 0,
+                title: "".to_string(),
+                image_sentence: "".to_string(),
+                description: "".to_string(),
+                date: "".to_string(),
+            },
             response: FetchState::NotFetching,
             state: LoginState::Failed,
             dream_id: ctx.props().id,
