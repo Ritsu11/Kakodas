@@ -38,8 +38,12 @@ impl Component for Show {
         match msg {
             Msg::FetchStart => {
                 ctx.link().send_future(async {
-                    let id_state: u32 = LocalStorage::get("id").unwrap();
-                    let url = format!("http://localhost:9000/dreams?user_id={id}", id = id_state);
+                    let id_state: Option<i32> = LocalStorage::get("id").unwrap_or_default();
+
+                    let url = format!(
+                        "http://localhost:9000/dreams?user_id={id}",
+                        id = id_state.unwrap()
+                    );
 
                     match get_request(&url.to_string()).await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
@@ -113,42 +117,57 @@ impl Component for Show {
                         </>
                     }
                 }
-                FetchState::Success(response) => {
-                    let json: Dreams = serde_json::from_str(&response).unwrap();
-                    html! {
-                        <>
-                        <div class="wrap">
-                            <div class="header">
-                                <img class="logo" src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo" />
-                                <div class="header_btn_logout">
-                                    <div class="sakusei"><Link<Route> to={ Route::DreamAdd }>{ "作成" }</Link<Route>></div>
-                                    <div class="log-out"><p onclick={ link.callback(|_| Msg::Logout) }>{ "ログアウト" }</p></div>
+                FetchState::Success(response) => match serde_json::from_str::<Dreams>(&response) {
+                    Ok(json) => {
+                        html! {
+                            <>
+                            <div class="wrap">
+                                <div class="header">
+                                    <img class="logo" src="https://pbs.twimg.com/media/FitbKr5akAAaPBp?format=png&name=360x360" alt="logo" />
+                                    <div class="header_btn_logout">
+                                        <div class="sakusei"><Link<Route> to={ Route::DreamAdd }>{ "作成" }</Link<Route>></div>
+                                        <div class="log-out"><p onclick={ link.callback(|_| Msg::Logout) }>{ "ログアウト" }</p></div>
+                                    </div>
+                                </div>
+                                <div class="cards_wrap">
+                                    {
+                                        json.dreams.map(|data| {
+                                            html! {
+                                                <>
+                                                    <div class="card">
+                                                        <Link<Route> to={ Route::DreamEdit { id: data.dreamId } }>
+                                                            <figure>
+                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
+                                                            <figcaption>
+                                                                <p>{ data.date } <br /><strong>{ data.title }</strong><br/>{ data.description }</p>
+                                                            </figcaption>
+                                                            </figure>
+                                                        </Link<Route>>
+                                                    </div>
+                                                </>
+                                            }
+                                        }).collect::<Html>()
+                                    }
                                 </div>
                             </div>
-                            <div class="cards_wrap">
-                                {
-                                    json.dreams.map(|data| {
-                                        html! {
-                                            <>
-                                                <div class="card">
-                                                    <Link<Route> to={ Route::DreamEdit { id: data.dreamId } }>
-                                                        <figure>
-                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
-                                                        <figcaption>
-                                                            <p>{ data.date } <br /><strong>{ data.title }</strong><br/>{ data.description }</p>
-                                                        </figcaption>
-                                                        </figure>
-                                                    </Link<Route>>
-                                                </div>
-                                            </>
-                                        }
-                                    }).collect::<Html>()
-                                }
+                            <div class="wrap_footer">
+                                    <div class="footer">
+                                        <div class="footer_txt">
+                                        <p>{"Contact　yutfujig08081@gmail.com"}</p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        </>
+                            </>
+                        }
                     }
-                }
+                    Err(_) => {
+                        html! {
+                            <>
+                              <FetchErr />
+                            </>
+                        }
+                    }
+                },
                 FetchState::Failed(_) => {
                     html! {
                         <>

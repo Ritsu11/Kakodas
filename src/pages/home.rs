@@ -122,7 +122,7 @@ impl Component for Home {
                                                         <figure>
                                                             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
                                                             <figcaption>
-                                                                <p>{ data.date } <br /><strong>{ data.title }</strong><br/>{ data.dreamId }</p>
+                                                                <p>{ data.date } <br /><strong>{ data.title }</strong><br/>{ data.description }</p>
                                                             </figcaption>
                                                         </figure>
                                                     </div>

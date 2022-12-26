@@ -1,7 +1,7 @@
 use crate::{
     components::not_found::NotFound,
     models::state::*,
-    models::{request::dream::Dream, *},
+    models::{request::dream_add::DreamAdd, *},
     router::route::Route,
     service::request::post_dream_request,
 };
@@ -12,7 +12,7 @@ use yew::{events::Event, html, Component, Context, Html};
 use yew_router::prelude::*;
 
 pub struct Add {
-    form: Dream,
+    form: DreamAdd,
     response: FetchState<String>,
     state: LoginState,
 }
@@ -36,8 +36,8 @@ impl Component for Add {
         ctx.link().send_message(Msg::CheckLogin);
 
         Self {
-            form: Dream {
-                user_id: LocalStorage::get("id").expect("none"),
+            form: DreamAdd {
+                user_id: 0,
                 title: "".to_string(),
                 image_sentence: "".to_string(),
                 description: "".to_string(),
@@ -57,9 +57,15 @@ impl Component for Add {
                 ctx.link().send_message(match login_state {
                     Some(_) => match id_state {
                         Some(_) => Msg::SetLoginState(LoginState::Success),
-                        None => Msg::SetLoginState(LoginState::Failed),
+                        None => {
+                            LocalStorage::delete("login");
+                            Msg::SetLoginState(LoginState::Failed)
+                        }
                     },
-                    None => Msg::SetLoginState(LoginState::Failed),
+                    None => {
+                        LocalStorage::delete("id");
+                        Msg::SetLoginState(LoginState::Failed)
+                    }
                 });
                 true
             }
@@ -92,7 +98,7 @@ impl Component for Add {
                 let title = &self.form.title;
                 let image_sentence = &self.form.image_sentence;
                 let description = &self.form.description;
-                let request = request::dream::Dream {
+                let request = DreamAdd {
                     user_id: self.form.user_id,
                     title: title.clone(),
                     image_sentence: image_sentence.clone(),
@@ -150,7 +156,7 @@ impl Component for Add {
                                 <div class="sakusei_head">{" 夢作成 "}</div>
                                 <div class="sakusei_date">
                                     <p>{ "夢を見た日" }</p>
-                                    <input type="date" value="2020-01-01" min="2015-01-01" max="2040-12-31" onchange={ input_date } />
+                                    <input type="date" min="2015-01-01" max="2040-12-31" onchange={ input_date } />
                                 </div>
                                 <div class="sakusei_title">
                                     <p>{ "夢のタイトル" }</p>
