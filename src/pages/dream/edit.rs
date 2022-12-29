@@ -1,7 +1,12 @@
 use crate::{
-    components::fetch_err::FetchErr, components::not_found::NotFound,
-    models::request::dream_edit::DreamEdit, models::response::dream::*, models::state::*,
-    router::route::Route, service::request::get_request, service::request::put_dream_request,
+    components::fetch_err::FetchErr,
+    components::not_found::NotFound,
+    models::request::dream_delete::DreamDelete,
+    models::request::dream_edit::DreamEdit,
+    models::response::dream::*,
+    models::state::*,
+    router::route::Route,
+    service::request::{delete_dream_request, get_request, put_dream_request},
 };
 use gloo::storage::{LocalStorage, Storage};
 use wasm_bindgen::JsCast;
@@ -25,6 +30,7 @@ pub enum Msg {
     InputTitle(String),
     InputImageDescription(String),
     RequestDreamEdit,
+    RequestDreamDelete,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
@@ -62,7 +68,7 @@ impl Component for Edit {
                 ctx.link().send_future(async {
                     let id_state: u32 = LocalStorage::get("dream_id").unwrap();
                     let url = format!(
-                        "http://localhost:9000/dreams/reading?dream_id={id}",
+                        "http://20.63.155.42:9000/dreams/reading?dream_id={id}",
                         id = id_state
                     );
 
@@ -130,7 +136,22 @@ impl Component for Edit {
                 };
 
                 ctx.link().send_future(async {
-                    match put_dream_request("http://localhost:9000/dreams/edit", request).await {
+                    match put_dream_request("http://20.63.155.42:9000/dreams/edit", request).await {
+                        Ok(_) => Msg::SetLoginState(LoginState::Failed),
+                        Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
+                    }
+                });
+                true
+            }
+            Msg::RequestDreamDelete => {
+                let request = DreamDelete {
+                    dream_id: self.dream_id.clone(),
+                };
+
+                ctx.link().send_future(async {
+                    match delete_dream_request("http://20.63.155.42:9000/dreams/delete", request)
+                        .await
+                    {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
@@ -166,78 +187,76 @@ impl Component for Edit {
                         </>
                     }
                 }
-                FetchState::Success(response) => {
-                    let json: Dreams = serde_json::from_str(&response).unwrap();
-                    match serde_json::from_str::<Dreams>(&response) {
-                        Ok(json) => {
-                            html! {
-                                <>
-                                <div>
-                                    <div class="wrap_edit">
-                                        <div class="frame_edit">
-                                            <div class="frame_contents_edit">
-                                                <div class="henshuu_head">{"編集"}</div>
-                                                    {
-                                                        json.dream.map(|data| {
-                                                            let input_date = link.batch_callback(|e: Event| {
-                                                                let target: Option<EventTarget> = e.target();
-                                                                let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+                FetchState::Success(response) => match serde_json::from_str::<Dreams>(&response) {
+                    Ok(json) => {
+                        html! {
+                            <>
+                            <div>
+                                <div class="wrap_edit">
+                                    <div class="frame_edit">
+                                        <div class="frame_contents_edit">
+                                            <div class="henshuu_head">{"編集"}</div>
+                                                {
+                                                    json.dream.map(|data| {
+                                                        let input_date = link.batch_callback(|e: Event| {
+                                                            let target: Option<EventTarget> = e.target();
+                                                            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
-                                                                input.map(|input| Msg::InputDate(input.value()))
-                                                            });
-                                                            let input_title = link.batch_callback(|e: Event| {
-                                                                let target: Option<EventTarget> = e.target();
-                                                                let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+                                                            input.map(|input| Msg::InputDate(input.value()))
+                                                        });
+                                                        let input_title = link.batch_callback(|e: Event| {
+                                                            let target: Option<EventTarget> = e.target();
+                                                            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
-                                                                input.map(|input| Msg::InputTitle(input.value()))
-                                                            });
-                                                            let input_description = link.batch_callback(|e: Event| {
-                                                                let target: Option<EventTarget> = e.target();
-                                                                let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
+                                                            input.map(|input| Msg::InputTitle(input.value()))
+                                                        });
+                                                        let input_description = link.batch_callback(|e: Event| {
+                                                            let target: Option<EventTarget> = e.target();
+                                                            let input = target.and_then(|t| t.dyn_into::<HtmlInputElement>().ok());
 
-                                                                input.map(|input| Msg::InputImageDescription(input.value()))
-                                                            });
+                                                            input.map(|input| Msg::InputImageDescription(input.value()))
+                                                        });
 
-                                                            html! {
-                                                                <>
-                                                                    <div class="henshuu_date">
-                                                                        <p>{"夢を見た日"}</p>
-                                                                        <input type="date" min="2015-01-01" max="2040-12-31" placeholder={ data.date } onchange={ input_date } />
-                                                                    </div>
-                                                                    <div class="henshuu_title">
-                                                                        <p>{"夢のタイトル"}</p>
-                                                                        <input type="text" placeholder={ data.title } onchange={ input_title } />
-                                                                    </div>
-                                                                    <div class="henshuu_explain">
-                                                                        <p>{"夢の説明"}{"文"}</p>
-                                                                        <input type="text" placeholder={ data.description }onchange={ input_description } />
-                                                                    </div>
-                                                                </>
-                                                            }
-                                                        }).collect::<Html>()
-                                                    }
-                                                    <div class="frame_form">
-                                                    <input id="dream_add" type="button" value="変更" onclick={ link.callback(|_| Msg::RequestDreamEdit) } />
-                                                    <div class="link3">
-                                                        <Link<Route> to={Route::Home}>{ "夢を削除する" }</Link<Route>>
-                                                    </div>
+                                                        html! {
+                                                            <>
+                                                                <div class="henshuu_date">
+                                                                    <p>{"夢を見た日"}</p>
+                                                                    <input type="date" min="2015-01-01" max="2040-12-31" placeholder={ data.date } onchange={ input_date } />
+                                                                </div>
+                                                                <div class="henshuu_title">
+                                                                    <p>{"夢のタイトル"}</p>
+                                                                    <input type="text" placeholder={ data.title } onchange={ input_title } />
+                                                                </div>
+                                                                <div class="henshuu_explain">
+                                                                    <p>{"夢の説明"}{"文"}</p>
+                                                                    <input type="text" placeholder={ data.description } onchange={ input_description } />
+                                                                </div>
+                                                            </>
+                                                        }
+                                                    }).collect::<Html>()
+                                                }
+                                                <div class="frame_form">
+                                                <input id="dream_add" type="button" value="変更" onclick={ link.callback(|_| Msg::RequestDreamEdit) } />
+                                                <div class="link3">
+                                                    // <Link<Route> to={Route::Home} >{ "夢を削除する" }</Link<Route>>
+                                                    <a href="/" onclick={ link.callback(|_| Msg::RequestDreamDelete) }>{ "夢を削除する" }</a>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                </>
-                            }
-                        }
-                        Err(_) => {
-                            html! {
-                                <>
-                                    <FetchErr />
-                                </>
-                            }
+                            </div>
+                            </>
                         }
                     }
-                }
+                    Err(_) => {
+                        html! {
+                            <>
+                                <FetchErr />
+                            </>
+                        }
+                    }
+                },
                 FetchState::Failed(_) => {
                     html! {
                         <>

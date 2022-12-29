@@ -94,12 +94,13 @@ impl Component for Add {
                 true
             }
             Msg::RequestDreamAdd => {
+                let user_id = LocalStorage::get("id").unwrap();
                 let date = &self.form.date;
                 let title = &self.form.title;
                 let image_sentence = &self.form.image_sentence;
                 let description = &self.form.description;
                 let request = DreamAdd {
-                    user_id: self.form.user_id,
+                    user_id: user_id,
                     title: title.clone(),
                     image_sentence: image_sentence.clone(),
                     description: description.clone(),
@@ -107,7 +108,8 @@ impl Component for Add {
                 };
 
                 ctx.link().send_future(async {
-                    match post_dream_request("http://localhost:9000/dreams/register", request).await
+                    match post_dream_request("http://20.63.155.42:9000/dreams/register", request)
+                        .await
                     {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),

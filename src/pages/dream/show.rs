@@ -41,7 +41,7 @@ impl Component for Show {
                     let id_state: Option<i32> = LocalStorage::get("id").unwrap_or_default();
 
                     let url = format!(
-                        "http://localhost:9000/dreams?user_id={id}",
+                        "http://20.63.155.42:9000/dreams?user_id={id}",
                         id = id_state.unwrap()
                     );
 

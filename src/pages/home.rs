@@ -38,7 +38,7 @@ impl Component for Home {
         match msg {
             Msg::FetchStart => {
                 ctx.link().send_future(async {
-                    match get_request("http://localhost:9000/dreams?user_id=1").await {
+                    match get_request("http://20.63.155.42:9000/dreams?user_id=1").await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
