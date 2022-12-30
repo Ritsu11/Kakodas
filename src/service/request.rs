@@ -105,6 +105,7 @@ pub async fn put_dream_request(url: &str, form: DreamEdit) -> Result<String, Fet
     Ok(text.as_string().unwrap())
 }
 
+// デリートリクエスト
 pub async fn delete_dream_request(url: &str, form: DreamDelete) -> Result<String, FetchError> {
     let form = serde_json::to_string(&form).unwrap();
     let mut opts = RequestInit::new();

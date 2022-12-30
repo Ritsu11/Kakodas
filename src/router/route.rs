@@ -20,6 +20,7 @@ pub enum Route {
     DreamEdit { id: u128 },
     #[at("/dream_show")]
     DreamShow,
+    #[not_found]
     #[at("/404")]
     NotFound,
 }

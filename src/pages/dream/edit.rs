@@ -1,8 +1,7 @@
 use crate::{
     components::fetch_err::FetchErr,
     components::not_found::NotFound,
-    models::request::dream_delete::DreamDelete,
-    models::request::dream_edit::DreamEdit,
+    models::request::{dream_delete::DreamDelete, dream_edit::DreamEdit},
     models::response::dream::*,
     models::state::*,
     router::route::Route,
@@ -48,7 +47,7 @@ impl Component for Edit {
 
         Self {
             form: DreamEdit {
-                dream_id: 2,
+                dream_id: 0,
                 title: "".to_string(),
                 image_sentence: "".to_string(),
                 description: "".to_string(),
@@ -68,7 +67,7 @@ impl Component for Edit {
                 ctx.link().send_future(async {
                     let id_state: u32 = LocalStorage::get("dream_id").unwrap();
                     let url = format!(
-                        "http://20.63.155.42:9000/dreams/reading?dream_id={id}",
+                        "https://20.63.155.42:9000/dreams/reading?dream_id={id}",
                         id = id_state
                     );
 
@@ -88,8 +87,6 @@ impl Component for Edit {
             Msg::CheckLogin => {
                 let login_state: Option<bool> = LocalStorage::get("login").unwrap_or_default();
                 let id_state: Option<i32> = LocalStorage::get("id").unwrap_or_default();
-
-                log::info!("Response: {:?}", "aaa");
 
                 ctx.link().send_message(match login_state {
                     Some(_) => match id_state {
@@ -136,7 +133,8 @@ impl Component for Edit {
                 };
 
                 ctx.link().send_future(async {
-                    match put_dream_request("http://20.63.155.42:9000/dreams/edit", request).await {
+                    match put_dream_request("https://20.63.155.42:9000/dreams/edit", request).await
+                    {
                         Ok(_) => Msg::SetLoginState(LoginState::Failed),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
@@ -145,15 +143,18 @@ impl Component for Edit {
             }
             Msg::RequestDreamDelete => {
                 let request = DreamDelete {
-                    dream_id: self.dream_id.clone(),
+                    dream_id: LocalStorage::get("dream_id").unwrap(),
                 };
 
                 ctx.link().send_future(async {
-                    match delete_dream_request("http://20.63.155.42:9000/dreams/delete", request)
+                    match delete_dream_request("https://20.63.155.42:9000/dreams/delete", request)
                         .await
                     {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
-                        Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
+                        Err(err) => {
+                            log::info!("Update: {:?}", &err);
+                            Msg::SetFetchState(FetchState::Failed(err))
+                        }
                     }
                 });
                 true
@@ -225,7 +226,7 @@ impl Component for Edit {
                                                                 </div>
                                                                 <div class="henshuu_title">
                                                                     <p>{"夢のタイトル"}</p>
-                                                                    <input type="text" placeholder={ data.title } onchange={ input_title } />
+                                                                    <input type="text" placeholder={ data.title.clone() } onchange={ input_title } />
                                                                 </div>
                                                                 <div class="henshuu_explain">
                                                                     <p>{"夢の説明"}{"文"}</p>

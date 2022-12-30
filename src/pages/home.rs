@@ -38,7 +38,7 @@ impl Component for Home {
         match msg {
             Msg::FetchStart => {
                 ctx.link().send_future(async {
-                    match get_request("http://20.63.155.42:9000/dreams?user_id=1").await {
+                    match get_request("https://20.63.155.42:9000/dreams?user_id=3").await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
@@ -120,7 +120,7 @@ impl Component for Home {
                                                 <>
                                                     <div class="card">
                                                         <figure>
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
+                                                            <img src={ data.image_path } alt="" />
                                                             <figcaption>
                                                                 <p>{ data.date } <br /><strong>{ data.title }</strong><br/>{ data.description }</p>
                                                             </figcaption>

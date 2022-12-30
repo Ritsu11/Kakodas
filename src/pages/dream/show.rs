@@ -3,8 +3,7 @@ use crate::{
     models::response::dreams::Dreams, models::state::*, router::route::Route,
     service::request::get_request,
 };
-use gloo::storage::LocalStorage;
-use gloo_storage::Storage;
+use gloo::storage::{LocalStorage, Storage};
 use yew::{html, Component, Context, Html};
 use yew_router::{components::Link, prelude::Redirect};
 
@@ -26,11 +25,11 @@ impl Component for Show {
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_message(Msg::FetchStart);
+        ctx.link().send_message(Msg::CheckLogin);
 
         Self {
             response: FetchState::NotFetching,
-            state: LoginState::Failed,
+            state: LoginState::Success,
         }
     }
 
@@ -41,7 +40,7 @@ impl Component for Show {
                     let id_state: Option<i32> = LocalStorage::get("id").unwrap_or_default();
 
                     let url = format!(
-                        "http://20.63.155.42:9000/dreams?user_id={id}",
+                        "https://20.63.155.42:9000/dreams?user_id={id}",
                         id = id_state.unwrap()
                     );
 
@@ -64,7 +63,10 @@ impl Component for Show {
 
                 ctx.link().send_message(match login_state {
                     Some(_) => match id_state {
-                        Some(_) => Msg::SetLoginState(LoginState::Success),
+                        Some(_) => {
+                            ctx.link().send_message(Msg::FetchStart);
+                            Msg::SetLoginState(LoginState::Success)
+                        }
                         None => {
                             LocalStorage::delete("login");
                             Msg::SetLoginState(LoginState::Failed)
@@ -85,7 +87,7 @@ impl Component for Show {
                 LocalStorage::delete("login");
                 LocalStorage::delete("id");
                 ctx.link()
-                    .send_message(Msg::SetLoginState(LoginState::Success));
+                    .send_message(Msg::SetLoginState(LoginState::Failed));
                 true
             }
         }
@@ -95,18 +97,11 @@ impl Component for Show {
         let link = ctx.link();
 
         match &self.state {
-            LoginState::Success => {
-                html! {
-                  <>
-                    <Redirect<Route> to={ Route::Home }/>
-                  </>
-                }
-            }
-            LoginState::Failed => match &self.response {
+            LoginState::Success => match &self.response {
                 FetchState::NotFetching => html! {
                     html! {
                         <>
-                            <NotFound />
+                             <NotFound />
                         </>
                     }
                 },
@@ -137,7 +132,7 @@ impl Component for Show {
                                                     <div class="card">
                                                         <Link<Route> to={ Route::DreamEdit { id: data.dreamId } }>
                                                             <figure>
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/2004-04-10_Larus_michahellis_ad.jpg/800px-2004-04-10_Larus_michahellis_ad.jpg" alt="" />
+                                                            <img src={ data.image_path } alt="" />
                                                             <figcaption>
                                                                 <p>{ data.date } <br /><strong>{ data.title }</strong><br/>{ data.description }</p>
                                                             </figcaption>
@@ -176,6 +171,13 @@ impl Component for Show {
                     }
                 }
             },
+            LoginState::Failed => {
+                html! {
+                  <>
+                    <Redirect<Route> to={ Route::Home }/>
+                  </>
+                }
+            }
         }
     }
 }

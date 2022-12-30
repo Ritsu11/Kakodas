@@ -86,7 +86,7 @@ impl Component for Register {
                 };
 
                 ctx.link().send_future(async {
-                    match post_request("http://20.63.155.42:9000/users/sign-up", request).await {
+                    match post_request("https://20.63.155.42:9000/users/sign-up", request).await {
                         Ok(response) => Msg::SetFetchState(FetchState::Success(response)),
                         Err(err) => Msg::SetFetchState(FetchState::Failed(err)),
                     }
